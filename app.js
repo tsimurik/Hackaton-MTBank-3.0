@@ -33,7 +33,7 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
   }
 
-  function getCurrentUser() {
+   function getCurrentUser() {
     try {
       var userId = localStorage.getItem(USER_KEY);
       if (!userId) return null;
@@ -61,7 +61,7 @@
     return String(n).trim().toLowerCase();
   }
 
-  function refreshRegistrationPreview() {
+    function refreshRegistrationPreview() {
     var preUserId = randomAlphanumeric(16);
     var preReferralCode = randomAlphanumeric(10);
     var preReferralLink = BASE_REF_URL + "?id=" + encodeURIComponent(preReferralCode);
@@ -301,7 +301,7 @@
     return { success: false, error: "Неверный ID или никнейм." };
   }
 
-  function checkAuthAndRedirect() {
+    function checkAuthAndRedirect() {
     var currentUser = getCurrentUser();
     if (currentUser) {
       showApp(currentUser);
@@ -400,10 +400,18 @@
       baseIncome: 65, 
       upgradeMultiplier: 1.58, 
       cost: 125 
+    },
+        mtbank: {
+      name: "МТБанк",
+      icon: "🏦",
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="8" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="2"/><rect x="10" y="20" width="100" height="20" rx="8" fill="#E10098" stroke="#C2185B" stroke-width="1"/><text x="60" y="35" font-size="9" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">МТБанк</text><rect x="45" y="55" width="30" height="25" rx="2" fill="#81D4FA" stroke="#0288D1" stroke-width="1" opacity="0.8"/><text x="60" y="72" font-size="8" fill="#0288D1" text-anchor="middle">🏦</text><ellipse cx="60" cy="105" rx="40" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 0,
+      upgradeMultiplier: 1,
+      cost: 0
     }
   };
   
-  var BUILDING_KEYS = ["coffee", "bank", "shop", "itcompany", "warehouse", "flowershop", "autoservice", "cinema", "construction", "gasstation", "restaurant"];
+    var BUILDING_KEYS = ["coffee", "bank", "shop", "itcompany", "warehouse", "flowershop", "autoservice", "cinema", "construction", "gasstation", "restaurant", "mtbank"];
   var currentSelectedBlock = null;
   var currentInfoIndex = null;
   
@@ -707,6 +715,289 @@
     checkAndResetCalendar();
     renderCalendarGrid();
     updateStreakDisplay();
+  }
+    // ========== МТБАНК (ЦЕНТРАЛЬНОЕ ЗДАНИЕ) ==========
+  
+  var MTBANK_KEY = "rr_mtbank_";
+  
+  function getMtbankData() {
+    var currentUser = getCurrentUser();
+    if (!currentUser) return null;
+    
+    var key = MTBANK_KEY + currentUser.id;
+    try {
+      var raw = localStorage.getItem(key);
+      if (!raw) {
+        return {
+          level: 1,
+          exp: 0,
+          expToNext: 100,
+          deposits: [],
+          creditDebt: 0
+        };
+      }
+      return JSON.parse(raw);
+    } catch (e) {
+      return {
+        level: 1,
+        exp: 0,
+        expToNext: 100,
+        deposits: [],
+        creditDebt: 0
+      };
+    }
+  }
+  
+  function saveMtbankData(data) {
+    var currentUser = getCurrentUser();
+    if (!currentUser) return;
+    var key = MTBANK_KEY + currentUser.id;
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+  
+    function getInterestRate(level) {
+    // Базовые проценты: 1% на 1 уровне, +0.5% за каждый уровень
+    return 1 + (level - 1) * 0.5;
+  }
+  
+  function getDepositInterest(days, level) {
+    var baseRate = getInterestRate(level);
+    if (days === 1) return baseRate;
+    if (days === 3) return baseRate + 0.5;
+    if (days === 7) return baseRate + 1;
+    if (days === 30) return baseRate + 2;
+    return baseRate;
+  }
+  
+  function getDepositInterest(days, level) {
+    var baseRate = getInterestRate(level);
+    if (days === 1) return baseRate;
+    if (days === 3) return baseRate + 2;
+    if (days === 7) return baseRate + 5;
+    if (days === 30) return baseRate + 10;
+    return baseRate;
+  }
+  
+  function addMtbankExp(amount) {
+    var mtData = getMtbankData();
+    if (!mtData) return;
+    
+    mtData.exp += amount;
+    var leveledUp = false;
+    
+    while (mtData.exp >= mtData.expToNext) {
+      mtData.exp -= mtData.expToNext;
+      mtData.level++;
+      mtData.expToNext = Math.floor(mtData.expToNext * 1.5);
+      leveledUp = true;
+      showGameToast(`🏦 МТБанк повышен до ${mtData.level} уровня! Ставка выросла до ${getInterestRate(mtData.level)}%`);
+    }
+    
+    saveMtbankData(mtData);
+    updateMtbankUI();
+    return leveledUp;
+  }
+  
+    function takeCredit() {
+    var currentUser = getCurrentUser();
+    var mtData = getMtbankData();
+    if (!currentUser || !mtData) return;
+    
+    var amountInput = document.getElementById("credit-amount");
+    var amount = parseInt(amountInput.value);
+    if (isNaN(amount) || amount <= 0) {
+      showGameToast("❌ Введите корректную сумму!");
+      return;
+    }
+    
+    // Максимальный кредит зависит от уровня банка (уровень * 500)
+    var maxCredit = mtData.level * 500;
+    
+    if (amount > maxCredit) {
+      showGameToast(`❌ Максимальный кредит для ${mtData.level} уровня: ${maxCredit} ⭐`);
+      return;
+    }
+    
+    if (mtData.creditDebt > 0) {
+      showGameToast("❌ У вас уже есть непогашенный кредит! Сначала погасите его.");
+      return;
+    }
+    
+    currentUser.balanceSkillPoints = (currentUser.balanceSkillPoints || 0) + amount;
+    mtData.creditDebt = amount * 2;
+    
+    var users = loadAllUsers();
+    users[currentUser.id] = currentUser;
+    saveAllUsers(users);
+    saveMtbankData(mtData);
+    
+    balanceSkillPoints = currentUser.balanceSkillPoints;
+    syncBalancesToDom();
+    updateGameBalanceDisplay();
+    updateMtbankUI();
+    
+    showGameToast(`💰 Вы получили ${amount} ⭐ в кредит! Вернуть нужно ${amount * 2} ⭐`);
+  }
+
+    function repayCredit() {
+    var currentUser = getCurrentUser();
+    var mtData = getMtbankData();
+    if (!currentUser || !mtData) return;
+    
+    if (mtData.creditDebt <= 0) {
+      showGameToast("❌ У вас нет активного кредита!");
+      return;
+    }
+    
+    if ((currentUser.balanceSkillPoints || 0) < mtData.creditDebt) {
+      showGameToast(`❌ Недостаточно очков прокачки для погашения кредита! Нужно ${mtData.creditDebt} ⭐`);
+      return;
+    }
+    
+    currentUser.balanceSkillPoints -= mtData.creditDebt;
+    mtData.creditDebt = 0;
+    
+    var users = loadAllUsers();
+    users[currentUser.id] = currentUser;
+    saveAllUsers(users);
+    saveMtbankData(mtData);
+    
+    balanceSkillPoints = currentUser.balanceSkillPoints;
+    syncBalancesToDom();
+    updateGameBalanceDisplay();
+    updateMtbankUI();
+    
+    showGameToast(`✅ Кредит погашен!`);
+  }
+  
+  function createDeposit() {
+    var currentUser = getCurrentUser();
+    var mtData = getMtbankData();
+    if (!currentUser || !mtData) return;
+    
+    var amountInput = document.getElementById("deposit-amount");
+    var amount = parseInt(amountInput.value);
+    var daysSelect = document.getElementById("deposit-days");
+    var days = parseInt(daysSelect.value);
+    
+    if (isNaN(amount) || amount <= 0) {
+      showGameToast("❌ Введите корректную сумму!");
+      return;
+    }
+    
+    if ((currentUser.balanceMtBanks || 0) < amount) {
+      showGameToast("❌ Недостаточно MTBank Tokens!");
+      return;
+    }
+    
+    var interest = getDepositInterest(days, mtData.level);
+    var endDate = Date.now() + (days * 24 * 60 * 60 * 1000);
+    
+    currentUser.balanceMtBanks -= amount;
+    
+    mtData.deposits.push({
+      amount: amount,
+      days: days,
+      interest: interest,
+      endDate: endDate,
+      startDate: Date.now()
+    });
+    
+    var users = loadAllUsers();
+    users[currentUser.id] = currentUser;
+    saveAllUsers(users);
+    saveMtbankData(mtData);
+    
+    balanceMtBanks = currentUser.balanceMtBanks;
+    syncBalancesToDom();
+    updateGameBalanceDisplay();
+    updateMtbankUI();
+    
+    showGameToast(`📈 Вклад открыт! ${amount} 💰 на ${days} дней под ${interest}%`);
+  }
+  
+  function checkDeposits() {
+    var currentUser = getCurrentUser();
+    var mtData = getMtbankData();
+    if (!currentUser || !mtData) return;
+    
+    var now = Date.now();
+    var needSave = false;
+    
+    for (var i = mtData.deposits.length - 1; i >= 0; i--) {
+      var deposit = mtData.deposits[i];
+      if (now >= deposit.endDate) {
+        var profit = Math.floor(deposit.amount * deposit.interest / 100);
+        currentUser.balanceMtBanks = (currentUser.balanceMtBanks || 0) + deposit.amount + profit;
+        mtData.deposits.splice(i, 1);
+        needSave = true;
+        showGameToast(`📊 Вклад закрыт! Получено ${deposit.amount + profit} 💰 (${profit} 💰 прибыль)`);
+      }
+    }
+    
+    if (needSave) {
+      var users = loadAllUsers();
+      users[currentUser.id] = currentUser;
+      saveAllUsers(users);
+      saveMtbankData(mtData);
+      balanceMtBanks = currentUser.balanceMtBanks;
+      syncBalancesToDom();
+      updateGameBalanceDisplay();
+      updateMtbankUI();
+    }
+  }
+  
+   function updateMtbankUI() {
+    var mtData = getMtbankData();
+    if (!mtData) return;
+    
+    document.getElementById("mtbank-level").textContent = mtData.level;
+    document.getElementById("mtbank-interest").textContent = getInterestRate(mtData.level).toFixed(1) + "%";
+    
+    var percent = (mtData.exp / mtData.expToNext) * 100;
+    var progressBar = document.getElementById("mtbank-progress-bar");
+    if (progressBar) progressBar.style.width = percent + "%";
+    var levelCount = document.getElementById("mtbank-level-count");
+    if (levelCount) levelCount.textContent = mtData.exp + " / " + mtData.expToNext;
+    
+    // Показываем кредитную задолженность
+    var creditDebtSpan = document.getElementById("mtbank-credit-debt");
+    if (creditDebtSpan) {
+      creditDebtSpan.textContent = mtData.creditDebt;
+    }
+    
+    var depositsList = document.getElementById("deposits-list");
+    if (depositsList) {
+      if (mtData.deposits.length === 0) {
+        depositsList.innerHTML = '<p style="text-align:center; color:#999; font-size:0.75rem;">Нет активных вкладов</p>';
+      } else {
+        depositsList.innerHTML = "";
+        for (var i = 0; i < mtData.deposits.length; i++) {
+          var d = mtData.deposits[i];
+          var remainingDays = Math.ceil((d.endDate - Date.now()) / (24 * 60 * 60 * 1000));
+          var div = document.createElement("div");
+          div.className = "deposit-item";
+          div.innerHTML = `
+            <div class="deposit-item__info">
+              <div><span class="deposit-item__amount">${d.amount} 💰</span> на ${d.days} дн. под ${d.interest}%</div>
+              <div class="deposit-item__end">Осталось: ${remainingDays} дн.</div>
+            </div>
+          `;
+          depositsList.appendChild(div);
+        }
+      }
+    }
+  }
+  
+  function openMtbankModal() {
+    updateMtbankUI();
+    var modal = document.getElementById("mtbank-modal");
+    if (modal) modal.removeAttribute("hidden");
+  }
+  
+  function closeMtbankModal() {
+    var modal = document.getElementById("mtbank-modal");
+    if (modal) modal.setAttribute("hidden", "");
   }
     // ========== ЗАДАНИЯ ==========
   
@@ -1414,6 +1705,11 @@
       return;
     }
     
+        if (building.type === "mtbank") {
+      openMtbankModal();
+      return;
+    }
+
     var typeData = BUILDING_TYPES[building.type];
     if (!typeData) {
       showGameToast("❌ Ошибка: тип здания не найден!");
@@ -1465,8 +1761,18 @@
     updateBuildingPriceMultiplier();
     var container = document.getElementById("minecraft-grid");
     if (!container) return;
-    
     var gameData = loadGameBuildings();
+        // Создаём МТБанк в центре (индекс 12 - центр поля 5x5), если его нет
+    if (!gameData.buildings[12]) {
+      gameData.buildings[12] = {
+        type: "mtbank",
+        level: 1,
+        isMainBank: true
+      };
+      saveGameBuildings(gameData);
+    }
+    
+    
     container.innerHTML = "";
     
     for (var i = 0; i < 25; i++) {
@@ -1660,6 +1966,43 @@
       });
       observer.observe(gamePanel, { attributes: true });
     }
+        // МТБанк модальное окно
+    var mtbankModal = document.getElementById("mtbank-modal");
+    var mtbankModalClose = document.getElementById("mtbank-modal-close");
+    var mtbankModalOverlay = document.querySelector("#mtbank-modal .mtbank-modal__overlay");
+    var creditBtn = document.getElementById("credit-btn");
+    var depositBtn = document.getElementById("deposit-btn");
+    var repayCreditBtn = document.getElementById("repay-credit-btn");
+    
+    // Закрытие по кнопке ✕
+    if (mtbankModalClose) {
+      mtbankModalClose.addEventListener("click", closeMtbankModal);
+    }
+    
+    // Закрытие по клику на фон (overlay)
+    if (mtbankModalOverlay) {
+      mtbankModalOverlay.addEventListener("click", closeMtbankModal);
+    }
+    
+    // Закрытие по клавише Escape
+    if (mtbankModal) {
+      document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape" && !mtbankModal.hasAttribute("hidden")) {
+          closeMtbankModal();
+        }
+      });
+    }
+    
+    if (creditBtn) creditBtn.addEventListener("click", takeCredit);
+    if (depositBtn) depositBtn.addEventListener("click", createDeposit);
+    if (repayCreditBtn) repayCreditBtn.addEventListener("click", repayCredit);
+    
+    // Периодическая проверка вкладов (каждую минуту)
+    setInterval(function() {
+      checkDeposits();
+    }, 60000);
+    
+    checkDeposits();
   }
 
   function init() {

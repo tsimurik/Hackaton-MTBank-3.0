@@ -12,7 +12,7 @@
 <body>
   <!-- Экран регистрации -->
   <div id="screen-register" class="screen screen--center">
-    <div class="card card--form">щ
+    <div class="card card--form">
       <h1 class="card__title">Создать аккаунт</h1>
       <form id="form-register" class="form" novalidate>
         <div class="field">
@@ -467,6 +467,74 @@
   <!-- Уведомления -->
   <div class="buy-toast" id="buy-toast"></div>
 
+  
+    <!-- Модальное окно МТБанк -->
+  <div class="mtbank-modal" id="mtbank-modal" hidden>
+    <div class="mtbank-modal__overlay"></div>
+    <div class="mtbank-modal__content">
+      <button class="mtbank-modal__close" id="mtbank-modal-close">✕</button>
+      <div class="mtbank-modal__icon">🏦</div>
+      <h3 class="mtbank-modal__title">МТБанк</h3>
+      <p class="mtbank-modal__subtitle">Главный банк МТ Сити</p>
+      
+      <div class="mtbank-level">
+        <div class="mtbank-level__header">
+          <span class="mtbank-level__label">⭐ Уровень банка</span>
+          <span class="mtbank-level__value" id="mtbank-level">1</span>
+        </div>
+        <div class="mtbank-level__progress">
+          <div class="mtbank-level__progress-bar" id="mtbank-progress-bar" style="width: 0%"></div>
+        </div>
+        <div class="mtbank-level__count" id="mtbank-level-count">0 / 100</div>
+      </div>
+      
+      <div class="mtbank-stats">
+        <div class="mtbank-stat">
+          <span class="mtbank-stat__label">💰 Ставка по вкладам</span>
+          <span class="mtbank-stat__value" id="mtbank-interest">5%</span>
+        </div>
+      </div>
+      
+      <div class="mtbank-actions">
+        <div class="mtbank-action">
+  <h4>💸 Погасить кредит</h4>
+  <p>Ваш долг: <span id="mtbank-credit-debt">0</span> ⭐</p>
+  <div class="mtbank-action__controls">
+    <button class="mtbank-btn mtbank-btn--repay" id="repay-credit-btn">Погасить кредит</button>
+  </div>
+</div>
+        <div class="mtbank-action">
+          <h4>💳 Кредит</h4>
+          <p>Получите очки прокачки в долг</p>
+          <div class="mtbank-action__controls">
+            <input type="number" id="credit-amount" class="mtbank-input" placeholder="Сумма" value="100">
+            <button class="mtbank-btn mtbank-btn--credit" id="credit-btn">Взять кредит</button>
+          </div>
+          <p class="mtbank-hint">⚠️ Вернуть нужно в 2 раза больше</p>
+        </div>
+        
+        <div class="mtbank-action">
+          <h4>📈 Вклад</h4>
+          <p>Вложите MTBank Tokens под проценты</p>
+          <div class="mtbank-action__controls">
+            <input type="number" id="deposit-amount" class="mtbank-input" placeholder="Сумма" value="100">
+            <select id="deposit-days" class="mtbank-select">
+              <option value="1">На 1 день (5%)</option>
+              <option value="3">На 3 дня (7%)</option>
+              <option value="7">На 7 дней (10%)</option>
+              <option value="30">На 30 дней (15%)</option>
+            </select>
+            <button class="mtbank-btn mtbank-btn--deposit" id="deposit-btn">Открыть вклад</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mtbank-deposits" id="mtbank-deposits">
+        <h4>📋 Активные вклады</h4>
+        <div id="deposits-list"></div>
+      </div>
+    </div>
+  </div>
   <script src="app.js" defer></script>
 </body>
 </html>
