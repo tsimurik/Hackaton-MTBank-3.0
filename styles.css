@@ -413,3 +413,45 @@ a.shop-item {
   margin-top: 16px;
   background: linear-gradient(145deg, #dc3545 0%, #c82333 100%);
 }
+
+/* ФИКС ВЫСОТЫ ДЛЯ ВСЕГО ПРИЛОЖЕНИЯ */
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+#screen-app {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.app-main {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.panel {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+.panel.is-active {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+.bottom-nav {
+  flex-shrink: 0 !important;
+  position: relative !important;
+}

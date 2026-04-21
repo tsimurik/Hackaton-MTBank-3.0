@@ -1,9 +1,9 @@
-// 🏙️ MtBank City — ПОЛНАЯ ВЕРСИЯ СО ВСЕМИ 15 ЗДАНИЯМИ
+// 🏙️ MtBank City — БАНК-РАТУША В ЦЕНТРЕ + BUSINESS CENTER
 console.log('🚀 city-game.js загружается...');
 
 // ========== КОНФИГУРАЦИЯ ВСЕХ 15 ЗДАНИЙ ==========
 const DEFS = [
-  // КАТЕГОРИЯ 1 — СТАРТОВЫЕ (дешёвые)
+  // КАТЕГОРИЯ 1 — СТАРТОВЫЕ
   {id:'cafe', name:'Кофейня', cat:'⭐ Старт', inc:6, uc:80, maxLv:5, bc:50, bg:'#fff4e0', sprite:'cafe.png'},
   {id:'flower', name:'Цветочный', cat:'⭐ Старт', inc:5, uc:70, maxLv:5, bc:45, bg:'#ffe0f0', sprite:'flower.png'},
   {id:'minimarket', name:'Мини-маркет', cat:'⭐ Старт', inc:7, uc:90, maxLv:5, bc:60, bg:'#e0ffe0', sprite:'minimarket.png'},
@@ -17,33 +17,35 @@ const DEFS = [
   {id:'itoffice', name:'ИТ-офис', cat:'🏢 Средний', inc:22, uc:250, maxLv:5, bc:220, bg:'#c0e0ff', sprite:'itoffice.png'},
   {id:'gasstation', name:'Заправка', cat:'🏢 Средний', inc:17, uc:190, maxLv:5, bc:170, bg:'#ffe0c0', sprite:'gasstation.png'},
   
-  // КАТЕГОРИЯ 3 — ЭЛИТНЫЕ
-  {id:'bank', name:'Банк', cat:'🏦 Элит', inc:45, uc:400, maxLv:5, bc:500, bg:'#e0eeff', sprite:'bank.png'},
+  // КАТЕГОРИЯ 3 — ЭЛИТНЫЕ (БАНК ЗАМЕНЁН НА BUSINESS CENTER)
+  {id:'business', name:'Бизнес-центр', cat:'🏦 Элит', inc:45, uc:400, maxLv:5, bc:500, bg:'#e0eeff', sprite:'business-center.png'},
   {id:'cinema', name:'Кинотеатр', cat:'🏦 Элит', inc:50, uc:450, maxLv:5, bc:550, bg:'#e0d0ff', sprite:'cinema.png'},
   {id:'construction', name:'Стройка', cat:'🏦 Элит', inc:55, uc:500, maxLv:5, bc:600, bg:'#ffe8a0', sprite:'construction.png'},
   {id:'warehouse', name:'Склад', cat:'🏦 Элит', inc:40, uc:380, maxLv:5, bc:450, bg:'#d0c0a0', sprite:'warehouse.png'},
   {id:'mall', name:'ТЦ', cat:'🏦 Элит', inc:60, uc:550, maxLv:5, bc:700, bg:'#ffd0e0', sprite:'mall.png'}
 ];
 
+// ОТДЕЛЬНАЯ КОНФИГУРАЦИЯ ДЛЯ РАТУШИ (НЕ ДОСТУПНА В МАГАЗИНЕ)
+const TOWNHALL_DEF = {id:'bank', name:'🏦 БАНК (Ратуша)', cat:'👑 Ратуша', inc:30, uc:500, maxLv:5, bc:0, bg:'#f5e6a0', sprite:'bank.png'};
+
 const DM = {};
 DEFS.forEach(d => DM[d.id] = d);
+DM['bank'] = TOWNHALL_DEF; // Добавляем для отображения ратуши
 
-// Категории для фильтрации
 const CATEGORIES = {
   starter: DEFS.slice(0, 5),
   medium: DEFS.slice(5, 10),
   elite: DEFS.slice(10, 15)
 };
 
-// Путь к спрайтам
 const SPRITE_PATH = 'assets/sprites/buildings/';
-
-// Глобальные переменные
-let cityCoins = 1500, cityLevel = 1, selectedKey = null, pendingTile = null;
-const buildings = {};
 const GRID = 5;
+
+let cityCoins = 2000, cityLevel = 1, selectedKey = null, pendingTile = null;
+const buildings = {};
 let isoContainer, coinDisplay, levelDisplay, tileElements = {}, popupOverlay, buildOverlay, notifEl, notifyTimeout;
 let currentCategory = 'starter';
+let cameraZoom = 1.3;
 
 // ========== ФУНКЦИИ ДЛЯ PNG СПРАЙТОВ ==========
 function getBldSpriteHTML(id, level) {
@@ -53,11 +55,13 @@ function getBldSpriteHTML(id, level) {
   const spritePath = SPRITE_PATH + def.sprite;
   const scale = 0.85 + (level * 0.04);
   const size = Math.floor(60 * scale);
+  const isTownhall = (id === 'bank');
   
   return `
-    <div style="position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:${size}px;height:${size}px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;pointer-events:none;filter:drop-shadow(0 6px 4px rgba(0,0,0,0.35));">
+    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:${size}px;height:${size}px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;pointer-events:none;filter:drop-shadow(0 6px 4px rgba(0,0,0,0.35));">
       <img src="${spritePath}" alt="${def.name}" style="width:100%;height:100%;object-fit:contain;image-rendering:crisp-edges;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
       <div style="display:none;width:100%;height:100%;background:${def.bg};border-radius:8px;align-items:center;justify-content:center;font-size:24px;font-weight:bold;color:#333;border:2px dashed #999;">${def.name.charAt(0)}</div>
+      ${isTownhall ? '<div style="position:absolute;top:-15px;font-size:20px;"></div>' : ''}
       <div style="margin-top:2px;background:rgba(0,0,0,0.6);color:#fff;padding:2px 6px;border-radius:12px;font-size:9px;font-weight:bold;white-space:nowrap;">Lv.${level}</div>
     </div>
   `;
@@ -75,14 +79,17 @@ function getPreviewSpriteHTML(id) {
   `;
 }
 
-// ========== ПЛИТКА ==========
+// ========== ПЛИТКА (РАТУША ВЫДЕЛЕНА) ==========
 function tileBg(r, c) {
-  const sh = (r + c) % 2 === 0 ? '#72c85a' : '#68ba50';
-  const lsh = '#50a038', rsh = '#427828';
+  const isTownhall = (r === 2 && c === 2);
+  const sh = isTownhall ? '#f5d060' : ((r + c) % 2 === 0 ? '#72c85a' : '#68ba50');
+  const lsh = isTownhall ? '#d4a020' : '#50a038';
+  const rsh = isTownhall ? '#b08010' : '#427828';
+  const strokeColor = isTownhall ? '#ffd700' : '#58a840';
   
   return `
     <svg viewBox="0 0 72 64" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:72px;height:64px;pointer-events:none">
-      <polygon points="36,1 71,19 36,37 1,19" fill="${sh}" stroke="#58a840" stroke-width="0.8"/>
+      <polygon points="36,1 71,19 36,37 1,19" fill="${sh}" stroke="${strokeColor}" stroke-width="${isTownhall ? '2.5' : '0.8'}"/>
       <polygon points="1,19 36,37 36,52 1,34" fill="${lsh}"/>
       <polygon points="36,37 71,19 71,34 36,52" fill="${rsh}"/>
     </svg>
@@ -92,37 +99,31 @@ function tileBg(r, c) {
 function makeTile(r, c) {
   const key = `${r},${c}`;
   const b = buildings[key];
-  const d = b ? DM[b.id] : null;
   
   const bldHTML = b ? getBldSpriteHTML(b.id, b.lv) : `
-    <div style="position:absolute;top:5px;left:12px;width:48px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(255,255,255,.18);border:2px dashed rgba(255,255,255,.55);font-size:18px;color:rgba(255,255,255,.75);">+</div>
+    <div style="position:absolute;top:12px;left:12px;width:48px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(255,255,255,.18);border:2px dashed rgba(255,255,255,.55);font-size:18px;color:rgba(255,255,255,.75);">+</div>
   `;
   
-  const bub = b ? `<div class="city-bubble" id="bub-${key}">🪙+${d.inc * b.lv}/ч</div>` : '';
   const dot = b ? `<div class="city-dot" id="dot-${key}"></div>` : '';
   
-  return tileBg(r, c) + bub + dot + bldHTML;
+  return tileBg(r, c) + dot + bldHTML;
 }
 
 // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
 function loadBuildings() {
-  const saved = localStorage.getItem('mtbank_city_buildings');
+  const saved = localStorage.getItem('mtbank_city_buildings_v6');
   if (saved) {
     Object.assign(buildings, JSON.parse(saved));
   } else {
-    // Стартовые здания
-    [
-      {r:0,c:1,id:'cafe'},{r:0,c:3,id:'flower'},{r:1,c:2,id:'restaurant'},
-      {r:2,c:0,id:'bank'},{r:2,c:4,id:'cinema'},{r:3,c:2,id:'minimarket'},
-      {r:4,c:1,id:'itoffice'},{r:4,c:3,id:'mall'}
-    ].forEach(b => { buildings[`${b.r},${b.c}`] = {id:b.id, lv:1, acc:0, tick:Date.now()}; });
+    // ТОЛЬКО РАТУША В ЦЕНТРЕ ПРИ СТАРТЕ
+    buildings['2,2'] = {id:'bank', lv:1, acc:0, tick:Date.now()};
   }
   
   const user = window.getCurrentUser?.();
-  if (user) { cityCoins = user.balanceMtBanks || 1500; updateCoins(); }
+  if (user) { cityCoins = user.balanceMtBanks || 2000; updateCoins(); }
 }
 
-function saveBuildings() { localStorage.setItem('mtbank_city_buildings', JSON.stringify(buildings)); }
+function saveBuildings() { localStorage.setItem('mtbank_city_buildings_v6', JSON.stringify(buildings)); }
 
 function renderGrid() {
   if (!isoContainer) return;
@@ -135,6 +136,9 @@ function renderGrid() {
   const CW = GRID * TW, CH = GRID * (TH / 2) + TH + 80 * scale;
   isoContainer.style.width = CW + 'px';
   isoContainer.style.height = CH + 'px';
+  isoContainer.style.transform = `scale(${cameraZoom})`;
+  isoContainer.style.transformOrigin = 'center center';
+  isoContainer.style.transition = 'transform 0.1s ease';
   isoContainer.innerHTML = '';
   tileElements = {};
   
@@ -155,14 +159,7 @@ function renderGrid() {
     }
   }
   
-  initBubbles(); updateDots();
-}
-
-function initBubbles() {
-  Object.keys(buildings).forEach(k => {
-    const el = document.getElementById('bub-' + k);
-    if (el) setTimeout(() => el.classList.add('visible'), 400 + Math.random() * 500);
-  });
+  updateDots();
 }
 
 function updateDots() {
@@ -185,8 +182,6 @@ function tickBuildings() {
 function refreshTile(key) {
   const [r, c] = key.split(',').map(Number);
   if (tileElements[key]) tileElements[key].innerHTML = makeTile(r, c);
-  const el = document.getElementById('bub-' + key);
-  if (el) setTimeout(() => el.classList.add('visible'), 250);
   updateDots();
 }
 
@@ -226,7 +221,6 @@ function openBuildMenu() {
     currentCategory = cat;
     grid.innerHTML = '';
     
-    // Обновляем активный таб
     document.querySelectorAll('.category-tab').forEach(tab => {
       tab.classList.toggle('active', tab.dataset.cat === cat);
     });
@@ -257,7 +251,6 @@ function openBuildMenu() {
     });
   };
   
-  // Создаём табы если их нет
   if (!categoryTabs) {
     const tabsDiv = document.createElement('div');
     tabsDiv.id = 'build-categories';
@@ -352,6 +345,18 @@ function burst() {
   });
 }
 
+function setupZoom() {
+  const gameArea = document.querySelector('.city-game-area');
+  if (!gameArea) return;
+  
+  gameArea.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.05 : 0.05;
+    cameraZoom = Math.min(2.0, Math.max(1.0, cameraZoom + delta));
+    if (isoContainer) isoContainer.style.transform = `scale(${cameraZoom})`;
+  }, { passive: false });
+}
+
 function bindEvents() {
   document.getElementById('city-stats-btn')?.addEventListener('click', showStats);
   document.getElementById('city-build-btn')?.addEventListener('click', () => { pendingTile = null; openBuildMenu(); });
@@ -373,7 +378,7 @@ window.initCity = function() {
     <div class="city-game-wrap" style="height:100%;display:flex;flex-direction:column;">
       <div class="city-bg"></div>
       <div class="city-hud">
-        <div class="city-coins"><div class="coin-icon">M</div><span id="city-coin-display">1500</span></div>
+        <div class="city-coins"><div class="coin-icon">M</div><span id="city-coin-display">2000</span></div>
         <div class="city-title">🏙 MtBank City</div>
         <div class="city-level">Lv.<span id="city-level-display">1</span></div>
       </div>
@@ -398,21 +403,23 @@ window.initCity = function() {
   buildOverlay = document.getElementById('build-overlay');
   notifEl = document.getElementById('city-notif');
   
+  // Очищаем старые данные при первом запуске
+  localStorage.removeItem('mtbank_city_buildings_v6');
+  
   loadBuildings();
   renderGrid();
   bindEvents();
+  setupZoom();
   updateCoins();
   
-  // Добавляем кнопку закрытия для меню постройки
   document.getElementById('build-close-btn')?.addEventListener('click', closeBuildMenu);
   
   setInterval(() => { tickBuildings(); updateDots(); }, 3000);
   setInterval(updateDots, 700);
   
-  // Ресайз при изменении окна
   window.addEventListener('resize', () => { if (isoContainer) renderGrid(); });
   
-  console.log('✅ Город отрисован со всеми 15 зданиями');
+  console.log('✅ Город отрисован! Банк-ратуша в центре, Business Center в магазине');
 };
 
 // Запуск
@@ -425,4 +432,4 @@ var waitInterval = setInterval(function() {
   }
 }, 300);
 
-console.log('✅ city-game.js загружен (15 зданий, 3 категории)');
+console.log('✅ city-game.js загружен');
