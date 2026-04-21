@@ -312,106 +312,179 @@
 
   // ========== 2D ЗДАНИЯ (БИЗНЕСЫ) ==========
   
-  var BUILDING_TYPES = {
+   // ========== 2D ЗДАНИЯ (БИЗНЕСЫ) ==========
+  
+    var BUILDING_TYPES = {
+          mtbank: {
+      name: "МТБанк",
+      icon: "🏦",
+      category: 0,
+      unlockLevel: 1,
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="8" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="2"/><rect x="10" y="20" width="100" height="20" rx="8" fill="#E10098" stroke="#C2185B" stroke-width="1"/><text x="60" y="35" font-size="9" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">МТБанк</text><rect x="45" y="55" width="30" height="25" rx="2" fill="#81D4FA" stroke="#0288D1" stroke-width="1" opacity="0.8"/><text x="60" y="72" font-size="8" fill="#0288D1" text-anchor="middle">🏦</text><ellipse cx="60" cy="105" rx="40" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 0,
+      upgradeMultiplier: 1,
+      cost: 0,
+      maxLevel: 3
+    },
+    // ========== КАТЕГОРИЯ 1 (доступна с 1 уровня МТБанка) ==========
     coffee: { 
       name: "Кофейня", 
       icon: "☕",
+      category: 1,
+      unlockLevel: 1,
       svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#F5F0E8" stroke="#A89880" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#4A4A4A" stroke="#2A2A2A" stroke-width="1"/><text x="60" y="32" font-size="8" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">☕ КОФЕЙНЯ</text><rect x="18" y="40" width="35" height="40" rx="2" fill="#B3E5FC" stroke="#78909C" stroke-width="1" opacity="0.8"/><line x1="35" y1="40" x2="35" y2="80" stroke="#78909C" stroke-width="0.8"/><line x1="18" y1="60" x2="53" y2="60" stroke="#78909C" stroke-width="0.8"/><rect x="62" y="42" width="40" height="38" rx="2" fill="#D4C8B8" stroke="#A89880" stroke-width="1"/><rect x="58" y="38" width="48" height="5" rx="1" fill="#607D8B"/><rect x="15" y="85" width="25" height="15" rx="2" fill="#6D4C41"/><rect x="80" y="85" width="25" height="15" rx="2" fill="#6D4C41"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
       baseIncome: 50, 
       upgradeMultiplier: 1.5, 
       cost: 100 
     },
-    bank: { 
-      name: "Банк", 
-      icon: "🏦",
-      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="25" width="104" height="75" rx="3" fill="#E8ECEF" stroke="#8090A0" stroke-width="1.5"/><rect x="8" y="25" width="104" height="18" rx="3" fill="#455A64" stroke="#263238" stroke-width="1"/><text x="60" y="38" font-size="9" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🏦 БАНК</text><rect x="15" y="48" width="12" height="35" fill="#D7CCC8" stroke="#8D6E63" stroke-width="0.8"/><rect x="93" y="48" width="12" height="35" fill="#D7CCC8" stroke="#8D6E63" stroke-width="0.8"/><rect x="35" y="52" width="15" height="28" fill="#81D4FA" stroke="#607D8B" stroke-width="0.8" opacity="0.7"/><rect x="70" y="52" width="15" height="28" fill="#81D4FA" stroke="#607D8B" stroke-width="0.8" opacity="0.7"/><path d="M60,22 Q60,15 60,22" fill="none" stroke="#FFC107" stroke-width="2"/><circle cx="60" cy="20" r="3" fill="#FFD700"/><rect x="12" y="85" width="96" height="5" fill="#CFD8DC"/><ellipse cx="60" cy="105" rx="50" ry="6" fill="rgba(0,0,0,0.1)"/></svg>`,
-      baseIncome: 80, 
-      upgradeMultiplier: 1.6, 
-      cost: 150 
-    },
-    shop: { 
-      name: "Магазин", 
-      icon: "🏪",
-      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#FFAB91" stroke="#BF360C" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#424242" stroke="#1A1A1A" stroke-width="1"/><text x="60" y="32" font-size="8" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🛒 МАГАЗИН</text><rect x="15" y="40" width="40" height="40" rx="2" fill="#B3E5FC" stroke="#BF360C" stroke-width="1" opacity="0.8"/><line x1="35" y1="40" x2="35" y2="80" stroke="#BF360C" stroke-width="0.8"/><line x1="15" y1="60" x2="55" y2="60" stroke="#BF360C" stroke-width="0.8"/><rect x="65" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#BF360C" stroke-width="1"/><rect x="60" y="38" width="50" height="5" rx="1" fill="#E64A19"/><rect x="18" y="85" width="30" height="15" rx="2" fill="#8D6E63"/><rect x="72" y="85" width="30" height="15" rx="2" fill="#8D6E63"/><rect x="12" y="105" width="96" height="3" fill="#BCAAA4" rx="1"/><ellipse cx="60" cy="112" rx="45" ry="4" fill="rgba(0,0,0,0.1)"/></svg>`,
-      baseIncome: 60, 
-      upgradeMultiplier: 1.55, 
-      cost: 120 
-    },
-    itcompany: { 
-      name: "IT Компания", 
-      icon: "💻",
-      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="15" width="90" height="85" rx="3" fill="#B3E5FC" stroke="#0288D1" stroke-width="1.5"/><rect x="15" y="15" width="90" height="12" rx="3" fill="#37474F" stroke="#1A1A1A" stroke-width="1"/><text x="60" y="24" font-size="6" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">💻 IT КОМПАНИЯ</text><rect x="22" y="32" width="12" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="38" y="32" width="12" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="54" y="32" width="12" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="70" y="32" width="12" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="86" y="32" width="12" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><text x="60" y="82" font-size="7" fill="#00FF00" font-family="monospace" text-anchor="middle">&lt;/&gt;</text><rect x="12" y="102" width="96" height="3" fill="#90A4AE" rx="1"/><ellipse cx="60" cy="110" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
-      baseIncome: 90, 
-      upgradeMultiplier: 1.65, 
-      cost: 200 
-    },
-    warehouse: { 
-      name: "Склад", 
-      icon: "🏭",
-      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="25" width="104" height="70" rx="3" fill="#D7CCC8" stroke="#5D4037" stroke-width="1.5"/><rect x="8" y="25" width="104" height="12" rx="3" fill="#546E7A" stroke="#263238" stroke-width="1"/><text x="60" y="34" font-size="7" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">📦 СКЛАД</text><rect x="20" y="42" width="35" height="28" rx="2" fill="#37474F"/><rect x="22" y="44" width="31" height="4" fill="#455A64"/><rect x="22" y="50" width="31" height="4" fill="#455A64"/><rect x="22" y="56" width="31" height="4" fill="#455A64"/><rect x="22" y="62" width="31" height="4" fill="#455A64"/><rect x="65" y="45" width="35" height="25" rx="2" fill="#37474F"/><rect x="67" y="47" width="31" height="3" fill="#455A64"/><rect x="67" y="52" width="31" height="3" fill="#455A64"/><rect x="67" y="57" width="31" height="3" fill="#455A64"/><rect x="67" y="62" width="31" height="3" fill="#455A64"/><rect x="15" y="78" width="25" height="15" rx="2" fill="#A1887F"/><rect x="80" y="78" width="25" height="15" rx="2" fill="#A1887F"/><rect x="12" y="98" width="96" height="4" fill="#78909C" rx="1"/><ellipse cx="60" cy="108" rx="48" ry="6" fill="rgba(0,0,0,0.1)"/></svg>`,
-      baseIncome: 45, 
-      upgradeMultiplier: 1.52, 
-      cost: 90 
-    },
     flowershop: { 
       name: "Цветочный магазин", 
       icon: "🌷",
+      category: 1,
+      unlockLevel: 1,
       svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#FCE4EC" stroke="#E91E63" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#AD1457" stroke="#880E4F" stroke-width="1"/><text x="60" y="32" font-size="6" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🌷 ЦВЕТЫ</text><rect x="18" y="40" width="35" height="40" rx="2" fill="#B3E5FC" stroke="#E91E63" stroke-width="1" opacity="0.8"/><line x1="35" y1="40" x2="35" y2="80" stroke="#E91E63" stroke-width="0.8"/><rect x="62" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#E91E63" stroke-width="1"/><text x="60" y="78" font-size="10" fill="#E91E63" text-anchor="middle">🌻🌹🌺</text><rect x="15" y="85" width="25" height="15" rx="2" fill="#66BB6A"/><rect x="80" y="85" width="25" height="15" rx="2" fill="#66BB6A"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
       baseIncome: 55, 
       upgradeMultiplier: 1.53, 
       cost: 110 
     },
+    minimarket: { 
+      name: "Мини-магазин", 
+      icon: "🏪",
+      category: 1,
+      unlockLevel: 1,
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#C8E6C9" stroke="#388E3C" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#2E7D32" stroke="#1B5E20" stroke-width="1"/><text x="60" y="32" font-size="7" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🛒 МИНИ</text><rect x="15" y="40" width="40" height="40" rx="2" fill="#B3E5FC" stroke="#388E3C" stroke-width="1" opacity="0.8"/><line x1="35" y1="40" x2="35" y2="80" stroke="#388E3C" stroke-width="0.8"/><rect x="65" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#388E3C" stroke-width="1"/><rect x="60" y="38" width="50" height="5" rx="1" fill="#4CAF50"/><rect x="18" y="85" width="30" height="15" rx="2" fill="#A5D6A7"/><rect x="72" y="85" width="30" height="15" rx="2" fill="#A5D6A7"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 45, 
+      upgradeMultiplier: 1.52, 
+      cost: 90 
+    },
+    foodtruck: { 
+      name: "Фудтрак", 
+      icon: "🚚",
+      category: 1,
+      unlockLevel: 1,
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#FFF3E0" stroke="#FF9800" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#E65100" stroke="#BF360C" stroke-width="1"/><text x="60" y="32" font-size="7" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🚚 ФУДТРАК</text><rect x="18" y="40" width="35" height="40" rx="2" fill="#FFE0B2" stroke="#FF9800" stroke-width="1"/><text x="35" y="65" font-size="10" fill="#E65100" text-anchor="middle">🍔</text><rect x="62" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#FF9800" stroke-width="1"/><rect x="70" y="50" width="24" height="30" rx="1" fill="#3D3D3D"/><circle cx="88" cy="70" r="2" fill="#FFC107"/><rect x="15" y="85" width="25" height="15" rx="2" fill="#FFCC80"/><rect x="80" y="85" width="25" height="15" rx="2" fill="#FFCC80"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 48, 
+      upgradeMultiplier: 1.54, 
+      cost: 95 
+    },
+    icecream: { 
+      name: "Киоск мороженого", 
+      icon: "🍦",
+      category: 1,
+      unlockLevel: 1,
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#E1F5FE" stroke="#0288D1" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#01579B" stroke="#014361" stroke-width="1"/><text x="60" y="32" font-size="7" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🍦 МОРОЖЕНОЕ</text><rect x="18" y="40" width="35" height="40" rx="2" fill="#FFF" stroke="#0288D1" stroke-width="1"/><text x="35" y="65" font-size="10" fill="#0288D1" text-anchor="middle">🍦</text><rect x="62" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#0288D1" stroke-width="1"/><rect x="70" y="50" width="24" height="30" rx="1" fill="#3D3D3D"/><circle cx="88" cy="70" r="2" fill="#FFC107"/><rect x="15" y="85" width="25" height="15" rx="2" fill="#B3E5FC"/><rect x="80" y="85" width="25" height="15" rx="2" fill="#B3E5FC"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 42, 
+      upgradeMultiplier: 1.51, 
+      cost: 85 
+    },
+    
+    // ========== КАТЕГОРИЯ 2 (доступна с 2 уровня МТБанка) ==========
+    restaurant: { 
+      name: "Ресторан", 
+      icon: "🍽️",
+      category: 2,
+      unlockLevel: 2,
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#FFE0B2" stroke="#E65100" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#BF360C" stroke="#E65100" stroke-width="1"/><text x="60" y="32" font-size="7" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🍽️ РЕСТОРАН</text><rect x="18" y="40" width="35" height="40" rx="2" fill="#FFF" stroke="#E65100" stroke-width="1"/><text x="35" y="65" font-size="10" fill="#E65100" text-anchor="middle">🍕</text><rect x="62" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#E65100" stroke-width="1"/><text x="60" y="78" font-size="6" fill="#E65100" text-anchor="middle">ЕДА</text><rect x="15" y="85" width="25" height="15" rx="2" fill="#FFCC80"/><rect x="80" y="85" width="25" height="15" rx="2" fill="#FFCC80"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 100, 
+      upgradeMultiplier: 1.6, 
+      cost: 250 
+    },
+    shop: { 
+      name: "Магазин", 
+      icon: "🏪",
+      category: 2,
+      unlockLevel: 2,
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#FFAB91" stroke="#BF360C" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#424242" stroke="#1A1A1A" stroke-width="1"/><text x="60" y="32" font-size="8" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🛒 МАГАЗИН</text><rect x="15" y="40" width="40" height="40" rx="2" fill="#B3E5FC" stroke="#BF360C" stroke-width="1" opacity="0.8"/><line x1="35" y1="40" x2="35" y2="80" stroke="#BF360C" stroke-width="0.8"/><line x1="15" y1="60" x2="55" y2="60" stroke="#BF360C" stroke-width="0.8"/><rect x="65" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#BF360C" stroke-width="1"/><rect x="60" y="38" width="50" height="5" rx="1" fill="#E64A19"/><rect x="18" y="85" width="30" height="15" rx="2" fill="#8D6E63"/><rect x="72" y="85" width="30" height="15" rx="2" fill="#8D6E63"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 110, 
+      upgradeMultiplier: 1.62, 
+      cost: 280 
+    },
     autoservice: { 
       name: "Автосервис", 
       icon: "🔧",
+      category: 2,
+      unlockLevel: 2,
       svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#B0BEC5" stroke="#455A64" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#37474F" stroke="#263238" stroke-width="1"/><text x="60" y="32" font-size="6" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🔧 АВТОСЕРВИС</text><rect x="18" y="40" width="35" height="40" rx="2" fill="#FFF" stroke="#455A64" stroke-width="1"/><text x="35" y="65" font-size="10" fill="#455A64" text-anchor="middle">🚗</text><rect x="62" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#455A64" stroke-width="1"/><text x="82" y="65" font-size="10" fill="#455A64" text-anchor="middle">🔧</text><rect x="15" y="85" width="25" height="15" rx="2" fill="#78909C"/><rect x="80" y="85" width="25" height="15" rx="2" fill="#78909C"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
-      baseIncome: 75, 
-      upgradeMultiplier: 1.62, 
-      cost: 160 
-    },
-    cinema: { 
-      name: "Кинотеатр", 
-      icon: "🎬",
-      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#E1BEE7" stroke="#6A1B9A" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#4A148C" stroke="#311B92" stroke-width="1"/><text x="60" y="32" font-size="6" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🎬 КИНОТЕАТР</text><rect x="18" y="40" width="35" height="40" rx="2" fill="#FFD54F" stroke="#6A1B9A" stroke-width="1"/><text x="35" y="65" font-size="10" fill="#6A1B9A" text-anchor="middle">🎬</text><rect x="62" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#6A1B9A" stroke-width="1"/><text x="60" y="78" font-size="7" fill="#6A1B9A" text-anchor="middle">КИНО</text><rect x="15" y="85" width="25" height="15" rx="2" fill="#CE93D8"/><rect x="80" y="85" width="25" height="15" rx="2" fill="#CE93D8"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
-      baseIncome: 85, 
+      baseIncome: 120, 
       upgradeMultiplier: 1.63, 
-      cost: 180 
+      cost: 300 
     },
-    construction: { 
-      name: "Стройкомпания", 
-      icon: "🏗️",
-      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#FFF3E0" stroke="#E65100" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#BF360C" stroke="#E65100" stroke-width="1"/><text x="60" y="32" font-size="5" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🏗️ СТРОЙКОМПАНИЯ</text><rect x="18" y="40" width="35" height="40" rx="2" fill="#FFCC80" stroke="#E65100" stroke-width="1"/><text x="35" y="65" font-size="10" fill="#E65100" text-anchor="middle">🏗️</text><rect x="62" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#E65100" stroke-width="1"/><text x="60" y="78" font-size="6" fill="#E65100" text-anchor="middle">СТРОЙКА</text><rect x="15" y="85" width="25" height="15" rx="2" fill="#FFA726"/><rect x="80" y="85" width="25" height="15" rx="2" fill="#FFA726"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
-      baseIncome: 95, 
-      upgradeMultiplier: 1.68, 
-      cost: 220 
+    itcompany: { 
+      name: "IT Компания", 
+      icon: "💻",
+      category: 2,
+      unlockLevel: 2,
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="15" width="90" height="85" rx="3" fill="#B3E5FC" stroke="#0288D1" stroke-width="1.5"/><rect x="15" y="15" width="90" height="12" rx="3" fill="#37474F" stroke="#1A1A1A" stroke-width="1"/><text x="60" y="24" font-size="6" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">💻 IT КОМПАНИЯ</text><rect x="22" y="32" width="12" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="38" y="32" width="12" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="54" y="32" width="12" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="70" y="32" width="12" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="86" y="32" width="12" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><text x="60" y="82" font-size="7" fill="#00FF00" font-family="monospace" text-anchor="middle">&lt;/&gt;</text><rect x="12" y="102" width="96" height="3" fill="#90A4AE" rx="1"/><ellipse cx="60" cy="110" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 140, 
+      upgradeMultiplier: 1.65, 
+      cost: 350 
     },
     gasstation: { 
       name: "Заправка", 
       icon: "⛽",
+      category: 2,
+      unlockLevel: 2,
       svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#C8E6C9" stroke="#2E7D32" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#1B5E20" stroke="#1B5E20" stroke-width="1"/><text x="60" y="32" font-size="7" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">⛽ ЗАПРАВКА</text><rect x="18" y="40" width="35" height="40" rx="2" fill="#FFF" stroke="#2E7D32" stroke-width="1"/><text x="35" y="65" font-size="10" fill="#2E7D32" text-anchor="middle">⛽</text><rect x="62" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#2E7D32" stroke-width="1"/><text x="60" y="78" font-size="6" fill="#2E7D32" text-anchor="middle">БЕНЗИН</text><rect x="15" y="85" width="25" height="15" rx="2" fill="#66BB6A"/><rect x="80" y="85" width="25" height="15" rx="2" fill="#66BB6A"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
-      baseIncome: 70, 
-      upgradeMultiplier: 1.6, 
-      cost: 140 
+      baseIncome: 115, 
+      upgradeMultiplier: 1.61, 
+      cost: 290 
     },
-    restaurant: { 
-      name: "Ресторан", 
-      icon: "🍽️",
-      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#FFE0B2" stroke="#E65100" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#BF360C" stroke="#E65100" stroke-width="1"/><text x="60" y="32" font-size="7" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🍽️ РЕСТОРАН</text><rect x="18" y="40" width="35" height="40" rx="2" fill="#FFF" stroke="#E65100" stroke-width="1"/><text x="35" y="65" font-size="10" fill="#E65100" text-anchor="middle">🍕</text><rect x="62" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#E65100" stroke-width="1"/><text x="60" y="78" font-size="6" fill="#E65100" text-anchor="middle">ЕДА</text><rect x="15" y="85" width="25" height="15" rx="2" fill="#FFCC80"/><rect x="80" y="85" width="25" height="15" rx="2" fill="#FFCC80"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
-      baseIncome: 65, 
-      upgradeMultiplier: 1.58, 
-      cost: 125 
+    
+    // ========== КАТЕГОРИЯ 3 (доступна с 3 уровня МТБанка) ==========
+    businesspark: { 
+      name: "Бизнес-парк", 
+      icon: "🏢",
+      category: 3,
+      unlockLevel: 3,
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="12" y="12" width="96" height="88" rx="3" fill="#B3E5FC" stroke="#0288D1" stroke-width="1.5"/><rect x="12" y="12" width="96" height="14" rx="3" fill="#37474F" stroke="#1A1A1A" stroke-width="1"/><text x="60" y="23" font-size="6" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🏢 БИЗНЕС-ПАРК</text><rect x="20" y="30" width="10" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="34" y="30" width="10" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="48" y="30" width="10" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="62" y="30" width="10" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="76" y="30" width="10" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="90" y="30" width="10" height="55" fill="#E1F5FE" stroke="#0288D1" stroke-width="0.6" rx="1"/><rect x="45" y="65" width="30" height="35" rx="2" fill="#2C2C2C"/><rect x="52" y="68" width="16" height="20" rx="1" fill="#3D3D3D"/><text x="60" y="82" font-size="7" fill="#00FF00" font-family="monospace" text-anchor="middle">$ $ $</text><rect x="12" y="102" width="96" height="3" fill="#90A4AE" rx="1"/><ellipse cx="60" cy="110" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 500, 
+      upgradeMultiplier: 1.85, 
+      cost: 1200 
     },
-        mtbank: {
-      name: "МТБанк",
-      icon: "🏦",
-      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="8" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="2"/><rect x="10" y="20" width="100" height="20" rx="8" fill="#E10098" stroke="#C2185B" stroke-width="1"/><text x="60" y="35" font-size="9" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">МТБанк</text><rect x="45" y="55" width="30" height="25" rx="2" fill="#81D4FA" stroke="#0288D1" stroke-width="1" opacity="0.8"/><text x="60" y="72" font-size="8" fill="#0288D1" text-anchor="middle">🏦</text><ellipse cx="60" cy="105" rx="40" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
-      baseIncome: 0,
-      upgradeMultiplier: 1,
-      cost: 0
+    cinema: { 
+      name: "Кинотеатр", 
+      icon: "🎬",
+      category: 3,
+      unlockLevel: 3,
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#E1BEE7" stroke="#6A1B9A" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#4A148C" stroke="#311B92" stroke-width="1"/><text x="60" y="32" font-size="6" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🎬 КИНОТЕАТР</text><rect x="18" y="40" width="35" height="40" rx="2" fill="#FFD54F" stroke="#6A1B9A" stroke-width="1"/><text x="35" y="65" font-size="10" fill="#6A1B9A" text-anchor="middle">🎬</text><rect x="62" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#6A1B9A" stroke-width="1"/><text x="60" y="78" font-size="7" fill="#6A1B9A" text-anchor="middle">КИНО</text><rect x="15" y="85" width="25" height="15" rx="2" fill="#CE93D8"/><rect x="80" y="85" width="25" height="15" rx="2" fill="#CE93D8"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 350, 
+      upgradeMultiplier: 1.78, 
+      cost: 800 
+    },
+    construction: { 
+      name: "Стройкомпания", 
+      icon: "🏗️",
+      category: 3,
+      unlockLevel: 3,
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="100" height="80" rx="4" fill="#FFF3E0" stroke="#E65100" stroke-width="1.5"/><rect x="10" y="20" width="100" height="15" rx="4" fill="#BF360C" stroke="#E65100" stroke-width="1"/><text x="60" y="32" font-size="5" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🏗️ СТРОЙКОМПАНИЯ</text><rect x="18" y="40" width="35" height="40" rx="2" fill="#FFCC80" stroke="#E65100" stroke-width="1"/><text x="35" y="65" font-size="10" fill="#E65100" text-anchor="middle">🏗️</text><rect x="62" y="42" width="40" height="38" rx="2" fill="#FFF" stroke="#E65100" stroke-width="1"/><text x="60" y="78" font-size="6" fill="#E65100" text-anchor="middle">СТРОЙКА</text><rect x="15" y="85" width="25" height="15" rx="2" fill="#FFA726"/><rect x="80" y="85" width="25" height="15" rx="2" fill="#FFA726"/><ellipse cx="60" cy="105" rx="45" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 320, 
+      upgradeMultiplier: 1.75, 
+      cost: 750 
+    },
+    warehouse: { 
+      name: "Склад", 
+      icon: "🏭",
+      category: 3,
+      unlockLevel: 3,
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="25" width="104" height="70" rx="3" fill="#D7CCC8" stroke="#5D4037" stroke-width="1.5"/><rect x="8" y="25" width="104" height="12" rx="3" fill="#546E7A" stroke="#263238" stroke-width="1"/><text x="60" y="34" font-size="7" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">📦 СКЛАД</text><rect x="20" y="42" width="35" height="28" rx="2" fill="#37474F"/><rect x="22" y="44" width="31" height="4" fill="#455A64"/><rect x="22" y="50" width="31" height="4" fill="#455A64"/><rect x="22" y="56" width="31" height="4" fill="#455A64"/><rect x="22" y="62" width="31" height="4" fill="#455A64"/><rect x="65" y="45" width="35" height="25" rx="2" fill="#37474F"/><rect x="67" y="47" width="31" height="3" fill="#455A64"/><rect x="67" y="52" width="31" height="3" fill="#455A64"/><rect x="67" y="57" width="31" height="3" fill="#455A64"/><rect x="67" y="62" width="31" height="3" fill="#455A64"/><rect x="15" y="78" width="25" height="15" rx="2" fill="#A1887F"/><rect x="80" y="78" width="25" height="15" rx="2" fill="#A1887F"/><rect x="12" y="98" width="96" height="4" fill="#78909C" rx="1"/><ellipse cx="60" cy="108" rx="48" ry="6" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 250, 
+      upgradeMultiplier: 1.7, 
+      cost: 600 
+    },
+    mall: { 
+      name: "Торговый центр", 
+      icon: "🏬",
+      category: 3,
+      unlockLevel: 3,
+      svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="15" width="104" height="85" rx="4" fill="#E8EAF6" stroke="#3F51B5" stroke-width="1.5"/><rect x="8" y="15" width="104" height="15" rx="4" fill="#3F51B5" stroke="#1A237E" stroke-width="1"/><text x="60" y="27" font-size="7" fill="#FFF" font-family="sans-serif" text-anchor="middle" font-weight="bold">🏬 ТОРГОВЫЙ ЦЕНТР</text><rect x="16" y="35" width="15" height="50" fill="#C5CAE9" stroke="#3F51B5" stroke-width="0.6" rx="1"/><rect x="35" y="35" width="15" height="50" fill="#C5CAE9" stroke="#3F51B5" stroke-width="0.6" rx="1"/><rect x="54" y="35" width="15" height="50" fill="#C5CAE9" stroke="#3F51B5" stroke-width="0.6" rx="1"/><rect x="73" y="35" width="15" height="50" fill="#C5CAE9" stroke="#3F51B5" stroke-width="0.6" rx="1"/><rect x="92" y="35" width="15" height="50" fill="#C5CAE9" stroke="#3F51B5" stroke-width="0.6" rx="1"/><rect x="45" y="68" width="30" height="32" rx="2" fill="#2C2C2C"/><rect x="52" y="72" width="16" height="20" rx="1" fill="#3D3D3D"/><ellipse cx="60" cy="105" rx="48" ry="5" fill="rgba(0,0,0,0.1)"/></svg>`,
+      baseIncome: 450, 
+      upgradeMultiplier: 1.82, 
+      cost: 1100 
     }
   };
-  
-    var BUILDING_KEYS = ["coffee", "bank", "shop", "itcompany", "warehouse", "flowershop", "autoservice", "cinema", "construction", "gasstation", "restaurant", "mtbank"];
+
+    var BUILDING_KEYS = ["coffee", "flowershop", "minimarket", "foodtruck", "icecream", "restaurant", "shop", "autoservice", "itcompany", "gasstation", "businesspark", "cinema", "construction", "warehouse", "mall", "mtbank"];
+
   var currentSelectedBlock = null;
   var currentInfoIndex = null;
   
@@ -544,6 +617,8 @@
     updateStreakDisplay();
     
     showGameToast(`🎉 Получено: ${reward.skill} ⭐ и ${reward.token} 💰!`);
+        // Начисляем опыт МТБанку за календарь (5 EXP за день)
+    addMtbankExp(5, "calendar");
     return true;
   }
   
@@ -748,6 +823,31 @@
     }
   }
   
+    function addMtbankExp(amount, source) {
+    var mtData = getMtbankData();
+    if (!mtData) return false;
+    
+    mtData.exp += amount;
+    var leveledUp = false;
+    
+    while (mtData.exp >= mtData.expToNext) {
+      mtData.exp -= mtData.expToNext;
+      mtData.level++;
+      mtData.expToNext = Math.floor(mtData.expToNext * 1.5);
+      leveledUp = true;
+      showGameToast(`🏦 МТБанк повышен до ${mtData.level} уровня! Ставка выросла до ${getInterestRate(mtData.level)}%`);
+    }
+    
+    saveMtbankData(mtData);
+    updateMtbankUI();
+    
+    if (source) {
+      console.log(`Добавлено ${amount} EXP от ${source}`);
+    }
+    
+    return leveledUp;
+  }
+
   function saveMtbankData(data) {
     var currentUser = getCurrentUser();
     if (!currentUser) return;
@@ -766,15 +866,6 @@
     if (days === 3) return baseRate + 0.5;
     if (days === 7) return baseRate + 1;
     if (days === 30) return baseRate + 2;
-    return baseRate;
-  }
-  
-  function getDepositInterest(days, level) {
-    var baseRate = getInterestRate(level);
-    if (days === 1) return baseRate;
-    if (days === 3) return baseRate + 2;
-    if (days === 7) return baseRate + 5;
-    if (days === 30) return baseRate + 10;
     return baseRate;
   }
   
@@ -989,15 +1080,149 @@
     }
   }
   
+    function closeMtbankModal() {
+    var modal = document.getElementById("mtbank-modal");
+    if (modal) modal.setAttribute("hidden", "");
+  }
+  
   function openMtbankModal() {
     updateMtbankUI();
     var modal = document.getElementById("mtbank-modal");
     if (modal) modal.removeAttribute("hidden");
   }
   
-  function closeMtbankModal() {
-    var modal = document.getElementById("mtbank-modal");
-    if (modal) modal.setAttribute("hidden", "");
+  function takeCredit() {
+    console.log("takeCredit function called");
+    var currentUser = getCurrentUser();
+    var mtData = getMtbankData();
+    if (!currentUser || !mtData) {
+      showGameToast("❌ Ошибка: пользователь не найден!");
+      return;
+    }
+    
+    var amountInput = document.getElementById("credit-amount");
+    if (!amountInput) {
+      showGameToast("❌ Ошибка: поле ввода не найдено!");
+      return;
+    }
+    
+    var amount = parseInt(amountInput.value);
+    if (isNaN(amount) || amount <= 0) {
+      showGameToast("❌ Введите корректную сумму!");
+      return;
+    }
+    
+    var maxCredit = mtData.level * 500;
+    
+    if (amount > maxCredit) {
+      showGameToast(`❌ Максимальный кредит для ${mtData.level} уровня: ${maxCredit} ⭐`);
+      return;
+    }
+    
+    if (mtData.creditDebt > 0) {
+      showGameToast("❌ У вас уже есть непогашенный кредит! Сначала погасите его.");
+      return;
+    }
+    
+    currentUser.balanceSkillPoints = (currentUser.balanceSkillPoints || 0) + amount;
+    mtData.creditDebt = amount * 2;
+    
+    var users = loadAllUsers();
+    users[currentUser.id] = currentUser;
+    saveAllUsers(users);
+    saveMtbankData(mtData);
+    
+    balanceSkillPoints = currentUser.balanceSkillPoints;
+    syncBalancesToDom();
+    updateGameBalanceDisplay();
+    updateMtbankUI();
+    
+    showGameToast(`💰 Вы получили ${amount} ⭐ в кредит! Вернуть нужно ${amount * 2} ⭐`);
+  }
+  
+  function createDeposit() {
+    console.log("createDeposit function called");
+    var currentUser = getCurrentUser();
+    var mtData = getMtbankData();
+    if (!currentUser || !mtData) return;
+    
+    var amountInput = document.getElementById("deposit-amount");
+    var daysSelect = document.getElementById("deposit-days");
+    
+    if (!amountInput || !daysSelect) {
+      showGameToast("❌ Ошибка: элементы не найдены!");
+      return;
+    }
+    
+    var amount = parseInt(amountInput.value);
+    var days = parseInt(daysSelect.value);
+    
+    if (isNaN(amount) || amount <= 0) {
+      showGameToast("❌ Введите корректную сумму!");
+      return;
+    }
+    
+    if ((currentUser.balanceMtBanks || 0) < amount) {
+      showGameToast("❌ Недостаточно MTBank Tokens!");
+      return;
+    }
+    
+    var interest = getDepositInterest(days, mtData.level);
+    var endDate = Date.now() + (days * 24 * 60 * 60 * 1000);
+    
+    currentUser.balanceMtBanks -= amount;
+    
+    mtData.deposits.push({
+      amount: amount,
+      days: days,
+      interest: interest,
+      endDate: endDate,
+      startDate: Date.now()
+    });
+    
+    var users = loadAllUsers();
+    users[currentUser.id] = currentUser;
+    saveAllUsers(users);
+    saveMtbankData(mtData);
+    
+    balanceMtBanks = currentUser.balanceMtBanks;
+    syncBalancesToDom();
+    updateGameBalanceDisplay();
+    updateMtbankUI();
+    
+    showGameToast(`📈 Вклад открыт! ${amount} 💰 на ${days} дней под ${interest}%`);
+  }
+  
+  function repayCredit() {
+    console.log("repayCredit function called");
+    var currentUser = getCurrentUser();
+    var mtData = getMtbankData();
+    if (!currentUser || !mtData) return;
+    
+    if (mtData.creditDebt <= 0) {
+      showGameToast("❌ У вас нет активного кредита!");
+      return;
+    }
+    
+    if ((currentUser.balanceSkillPoints || 0) < mtData.creditDebt) {
+      showGameToast(`❌ Недостаточно очков прокачки для погашения кредита! Нужно ${mtData.creditDebt} ⭐`);
+      return;
+    }
+    
+    currentUser.balanceSkillPoints -= mtData.creditDebt;
+    mtData.creditDebt = 0;
+    
+    var users = loadAllUsers();
+    users[currentUser.id] = currentUser;
+    saveAllUsers(users);
+    saveMtbankData(mtData);
+    
+    balanceSkillPoints = currentUser.balanceSkillPoints;
+    syncBalancesToDom();
+    updateGameBalanceDisplay();
+    updateMtbankUI();
+    
+    showGameToast(`✅ Кредит погашен!`);
   }
     // ========== ЗАДАНИЯ ==========
   
@@ -1220,6 +1445,8 @@
     renderTasksList();
     
     showGameToast(`🎉 Получена награда: ${rewardSkill} ⭐ и ${rewardToken} 💰!`);
+        // Начисляем опыт МТБанку за выполнение задания (15 EXP)
+    addMtbankExp(15, "task");
     return true;
   }
   
@@ -1344,9 +1571,12 @@
     return Math.floor(typeData.baseIncome * Math.pow(typeData.upgradeMultiplier, building.level - 1));
   }
   
-  function getUpgradeCost(building) {
+        function getUpgradeCost(building) {
     if (!building) return 0;
+    // МТБанк не улучшается за очки прокачки
+    if (building.type === "mtbank") return Infinity;
     var typeData = BUILDING_TYPES[building.type];
+    if (!typeData) return 0;
     return Math.floor(typeData.cost * Math.pow(1.3, building.level - 1));
   }
   
@@ -1520,10 +1750,12 @@
     renderMinecraftGrid();
     
     showGameToast("✅ Построено: " + BUILDING_TYPES[type].name + " за " + cost + " ⭐!");
+        // Начисляем опыт МТБанку за постройку бизнеса (5 EXP)
+    addMtbankExp(5, "build_building");
     return true;
   }
   
-  function upgradeBuilding(index) {
+    function upgradeBuilding(index) {
     var currentUser = getCurrentUser();
     if (!currentUser) return false;
     
@@ -1532,6 +1764,13 @@
     
     if (!building) {
       showGameToast("❌ Здесь нет здания!");
+      return false;
+    }
+    
+    // Проверка максимального уровня для банка (если есть maxLevel)
+    var typeData = BUILDING_TYPES[building.type];
+    if (typeData && typeData.maxLevel && building.level >= typeData.maxLevel) {
+      showGameToast(`❌ ${typeData.name} достиг максимального ${typeData.maxLevel} уровня!`);
       return false;
     }
     
@@ -1558,6 +1797,10 @@
     
     showGameToast("⬆️ " + BUILDING_TYPES[building.type].name + " улучшен до " + building.level + " уровня!");
     
+        // Начисляем опыт МТБанку за улучшение бизнеса (10 EXP за уровень)
+    var expGain = 10 * building.level;
+    addMtbankExp(expGain, "upgrade_building");
+
     checkAllTasksCompletion();
 
     if (currentInfoIndex === index) {
@@ -1661,30 +1904,74 @@
     return true;
   }
   
-  function openBuildModal(blockIndex) {
+      function openBuildModal(blockIndex) {
     currentSelectedBlock = blockIndex;
     var container = document.getElementById("build-options");
     container.innerHTML = "";
     
+    var mtData = getMtbankData();
+    var currentLevel = mtData ? mtData.level : 1;
+    
+    // Группируем здания по категориям
+    var categories = {
+      1: { name: "🏪 1 уровень МТБанка", buildings: [], unlocked: currentLevel >= 1 },
+      2: { name: "🏢 2 уровень МТБанка", buildings: [], unlocked: currentLevel >= 2 },
+      3: { name: "🏬 3 уровень МТБанка", buildings: [], unlocked: currentLevel >= 3 }
+    };
+    
     for (var i = 0; i < BUILDING_KEYS.length; i++) {
       var key = BUILDING_KEYS[i];
       var type = BUILDING_TYPES[key];
+      if (type && type.category) {
+        categories[type.category].buildings.push({ key: key, type: type });
+      }
+    }
+    
+    // Добавляем заголовки и здания
+    for (var cat = 1; cat <= 3; cat++) {
+      var category = categories[cat];
+      if (category.buildings.length === 0) continue;
       
-      var option = document.createElement("div");
-      option.className = "build-option";
-      option.innerHTML = `
-        <div class="build-option__icon">${type.icon}</div>
-        <div class="build-option__name">${type.name}</div>
-        <div class="build-option__cost">⭐ ${Math.floor(type.cost * buildingPriceMultiplier)}</div>
-      `;
-      option.addEventListener("click", (function(k) {
-        return function() {
-          buildBuilding(currentSelectedBlock, k);
-          closeBuildModal();
-        };
-      })(key));
+      // Заголовок категории
+      var header = document.createElement("div");
+      header.className = "build-category-header";
+      header.innerHTML = `<span class="build-category-title">${category.name}</span>`;
+      container.appendChild(header);
       
-      container.appendChild(option);
+      // Здания в категории
+      for (var j = 0; j < category.buildings.length; j++) {
+        var item = category.buildings[j];
+        var key = item.key;
+        var type = item.type;
+        var isUnlocked = currentLevel >= type.unlockLevel;
+        var price = Math.floor(type.cost * buildingPriceMultiplier);
+        
+        var option = document.createElement("div");
+        option.className = "build-option";
+        
+        if (isUnlocked) {
+          option.innerHTML = `
+            <div class="build-option__icon">${type.icon}</div>
+            <div class="build-option__name">${type.name}</div>
+            <div class="build-option__cost">⭐ ${price}</div>
+          `;
+          option.addEventListener("click", (function(k) {
+            return function() {
+              buildBuilding(currentSelectedBlock, k);
+              closeBuildModal();
+            };
+          })(key));
+        } else {
+          option.classList.add("build-option--locked");
+          option.innerHTML = `
+            <div class="build-option__icon">${type.icon}</div>
+            <div class="build-option__name">${type.name}</div>
+            <div class="build-option__cost">🔒 Уровень МТБанка ${type.unlockLevel}</div>
+          `;
+        }
+        
+        container.appendChild(option);
+      }
     }
     
     var modal = document.getElementById("build-modal");
@@ -1757,21 +2044,23 @@
     currentInfoIndex = null;
   }
   
-  function renderMinecraftGrid() {
+    function renderMinecraftGrid() {
     updateBuildingPriceMultiplier();
     var container = document.getElementById("minecraft-grid");
     if (!container) return;
+    
     var gameData = loadGameBuildings();
-        // Создаём МТБанк в центре (индекс 12 - центр поля 5x5), если его нет
-    if (!gameData.buildings[12]) {
+    
+    // Проверяем и создаём МТБанк в центре, если его нет
+    if (!gameData.buildings || !gameData.buildings[12]) {
       gameData.buildings[12] = {
         type: "mtbank",
         level: 1,
-        isMainBank: true
+        isMainBank: true,
+        pendingIncome: 0
       };
       saveGameBuildings(gameData);
     }
-    
     
     container.innerHTML = "";
     
@@ -1781,9 +2070,15 @@
       
       var building = gameData.buildings[i];
       
-      if (building && BUILDING_TYPES[building.type]) {
+            if (building && BUILDING_TYPES[building.type]) {
         var typeData = BUILDING_TYPES[building.type];
         var pending = building.pendingIncome || 0;
+        
+        block.className += " minecraft-block--building";
+        
+        if (building.type === "mtbank") {
+          block.classList.add("minecraft-block--mtbank");
+        }
         
         block.className += " minecraft-block--building";
         
@@ -1850,12 +2145,28 @@
   }
   
   function initGame() {
+    var currentUser = getCurrentUser();
+    if (currentUser) {
+      var gameData = loadGameBuildings();
+      if (!gameData.buildings[12] || gameData.buildings[12].type !== "mtbank") {
+        gameData.buildings[12] = {
+          type: "mtbank",
+          level: 1,
+          isMainBank: true,
+          pendingIncome: 0
+        };
+        saveGameBuildings(gameData);
+        console.log("МТБанк создан в центре поля");
+      }
+    }
+    
     migrateOldBuildings();
     updateBuildingPriceMultiplier();
     updatePendingIncome();
     renderMinecraftGrid();
     updateGameBalanceDisplay();
     startIncomeTimer();
+    
     
     var collectAllBtn = document.getElementById("collect-all-btn");
     if (collectAllBtn) {
@@ -1966,30 +2277,73 @@
       });
       observer.observe(gamePanel, { attributes: true });
     }
-        // МТБанк модальное окно
+       // МТБанк модальное окно - ПРАВИЛЬНЫЕ ОБРАБОТЧИКИ
     var mtbankModal = document.getElementById("mtbank-modal");
     var mtbankModalClose = document.getElementById("mtbank-modal-close");
     var mtbankModalOverlay = document.querySelector("#mtbank-modal .mtbank-modal__overlay");
+    
+    // Кнопки должны быть найдены ПОСЛЕ того как модальное окно существует в DOM
     var creditBtn = document.getElementById("credit-btn");
     var depositBtn = document.getElementById("deposit-btn");
     var repayCreditBtn = document.getElementById("repay-credit-btn");
     
+    console.log("creditBtn found:", creditBtn);
+    console.log("depositBtn found:", depositBtn);
+    console.log("repayCreditBtn found:", repayCreditBtn);
+    
     // Закрытие по кнопке ✕
     if (mtbankModalClose) {
-      mtbankModalClose.addEventListener("click", closeMtbankModal);
+      // Удаляем старые обработчики, чтобы не было дублей
+      var newCloseBtn = mtbankModalClose.cloneNode(true);
+      mtbankModalClose.parentNode.replaceChild(newCloseBtn, mtbankModalClose);
+      newCloseBtn.addEventListener("click", closeMtbankModal);
     }
     
     // Закрытие по клику на фон (overlay)
     if (mtbankModalOverlay) {
-      mtbankModalOverlay.addEventListener("click", closeMtbankModal);
+      var newOverlay = mtbankModalOverlay.cloneNode(true);
+      mtbankModalOverlay.parentNode.replaceChild(newOverlay, mtbankModalOverlay);
+      newOverlay.addEventListener("click", closeMtbankModal);
     }
     
     // Закрытие по клавише Escape
     if (mtbankModal) {
-      document.addEventListener("keydown", function(e) {
+      document.removeEventListener("keydown", mtbankEscapeHandler);
+      var mtbankEscapeHandler = function(e) {
         if (e.key === "Escape" && !mtbankModal.hasAttribute("hidden")) {
           closeMtbankModal();
         }
+      };
+      document.addEventListener("keydown", mtbankEscapeHandler);
+    }
+    
+    // Кнопка кредита
+    if (creditBtn) {
+      var newCreditBtn = creditBtn.cloneNode(true);
+      creditBtn.parentNode.replaceChild(newCreditBtn, creditBtn);
+      newCreditBtn.addEventListener("click", function() {
+        console.log("Credit button clicked");
+        takeCredit();
+      });
+    }
+    
+    // Кнопка вклада
+    if (depositBtn) {
+      var newDepositBtn = depositBtn.cloneNode(true);
+      depositBtn.parentNode.replaceChild(newDepositBtn, depositBtn);
+      newDepositBtn.addEventListener("click", function() {
+        console.log("Deposit button clicked");
+        createDeposit();
+      });
+    }
+    
+    // Кнопка погашения кредита
+    if (repayCreditBtn) {
+      var newRepayBtn = repayCreditBtn.cloneNode(true);
+      repayCreditBtn.parentNode.replaceChild(newRepayBtn, repayCreditBtn);
+      newRepayBtn.addEventListener("click", function() {
+        console.log("Repay button clicked");
+        repayCredit();
       });
     }
     
