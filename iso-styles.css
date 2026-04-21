@@ -306,3 +306,16 @@
 .city-tile:hover {
   filter: brightness(1.1);
 }
+
+#panel-game {
+  display: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+#panel-game.is-active {
+  display: flex !important;
+  flex-direction: column !important;
+}

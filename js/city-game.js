@@ -78,7 +78,39 @@ function getPreviewSpriteHTML(id) {
     </div>
   `;
 }
-
+// В начало файла добавьте:
+window.resetCity = function() {
+  console.log('🔄 Полный сброс города');
+  
+  // Сбрасываем флаг
+  cityInitialized = false;
+  
+  // Очищаем все здания из памяти
+  for (var key in buildings) {
+    delete buildings[key];
+  }
+  
+  // Очищаем контейнер
+  var panel = document.getElementById('panel-game');
+  if (panel) {
+    panel.innerHTML = '';
+  }
+  
+  // Сбрасываем глобальные переменные
+  cityCoins = 2000;
+  cityLevel = 1;
+  selectedKey = null;
+  pendingTile = null;
+  tileElements = {};
+  
+  // Останавливаем интервалы (если нужно)
+  if (window._cityInterval) {
+    clearInterval(window._cityInterval);
+    window._cityInterval = null;
+  }
+  
+  console.log('✅ Город полностью сброшен');
+};
 // ========== ПЛИТКА ==========
 function tileBg(r, c) {
   const isTownhall = (r === 2 && c === 2);
@@ -111,18 +143,61 @@ function makeTile(r, c) {
 
 // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
 function loadBuildings() {
-  const saved = localStorage.getItem('mtbank_city_buildings_v7');
-  if (saved) {
-    Object.assign(buildings, JSON.parse(saved));
-  } else {
-    buildings['2,2'] = {id:'bank', lv:1, acc:0, tick:Date.now()};
+  // Очищаем текущие здания перед загрузкой
+  for (var key in buildings) {
+    delete buildings[key];
   }
   
   const user = window.getCurrentUser?.();
-  if (user) { cityCoins = user.balanceMtBanks || 2000; updateCoins(); }
+  const storageKey = user ? `mtbank_city_buildings_${user.id}` : 'mtbank_city_buildings_v7';
+  
+  console.log('📂 Загрузка из хранилища:', storageKey);
+  
+  const saved = localStorage.getItem(storageKey);
+  
+  if (saved) {
+    try {
+      const loaded = JSON.parse(saved);
+      // Проверяем, есть ли вообще здания в сохранении
+      if (Object.keys(loaded).length === 0) {
+        // Если сохранение пустое — создаём Ратушу
+        console.log('🆕 Пустое сохранение — создаём Ратушу');
+        buildings['2,2'] = {id:'bank', lv:1, acc:0, tick:Date.now()};
+      } else {
+        Object.assign(buildings, loaded);
+        console.log('✅ Загружены сохранённые здания:', Object.keys(buildings).length);
+      }
+    } catch (e) {
+      console.error('❌ Ошибка загрузки, создаём Ратушу:', e);
+      buildings['2,2'] = {id:'bank', lv:1, acc:0, tick:Date.now()};
+    }
+  } else {
+    // Нет сохранения — новая игра
+    console.log('🆕 Новая игра — создаём Ратушу в центре');
+    buildings['2,2'] = {id:'bank', lv:1, acc:0, tick:Date.now()};
+  }
+  
+  // Убеждаемся, что Ратуша существует
+  if (!buildings['2,2']) {
+    console.log('⚠️ Ратуша отсутствует, создаём заново');
+    buildings['2,2'] = {id:'bank', lv:1, acc:0, tick:Date.now()};
+  }
+  
+  if (user) { 
+    cityCoins = user.balanceMtBanks || 2000; 
+    console.log('💰 Баланс:', cityCoins);
+    updateCoins(); 
+  }
+  
+  console.log('🏢 Здания после загрузки:', Object.keys(buildings));
 }
 
-function saveBuildings() { localStorage.setItem('mtbank_city_buildings_v7', JSON.stringify(buildings)); }
+function saveBuildings() { 
+  const user = window.getCurrentUser?.();
+  const storageKey = user ? `mtbank_city_buildings_${user.id}` : 'mtbank_city_buildings_v7';
+  localStorage.setItem(storageKey, JSON.stringify(buildings)); 
+}
+
 
 function renderGrid() {
   if (!isoContainer) return;
@@ -509,6 +584,14 @@ window.initCity = function() {
   }
   
   loadBuildings();
+
+  const user = window.getCurrentUser?.();
+  const storageKey = user ? `mtbank_city_buildings_${user.id}` : 'mtbank_city_buildings_v7';
+  if (!localStorage.getItem(storageKey)) {
+    saveBuildings();
+    console.log('💾 Сохранена новая игра с Ратушей');
+  }
+
   renderGrid();
   bindEvents();
   setupCameraControls();

@@ -30,6 +30,26 @@
       return {};
     }
   }
+  // Очистка текущего пользователя (выход)
+// Очистка текущего пользователя (выход)
+function logout() {
+  // Сбрасываем игру перед выходом
+  if (typeof window.resetCity === 'function') {
+    window.resetCity();
+  }
+  
+  // Очищаем текущего пользователя
+  localStorage.removeItem(USER_KEY);
+  
+  // Очищаем форму входа
+  var loginIdInput = document.getElementById("login-id");
+  var loginNicknameInput = document.getElementById("login-nickname");
+  if (loginIdInput) loginIdInput.value = "";
+  if (loginNicknameInput) loginNicknameInput.value = "";
+  
+  // Показываем экран регистрации
+  showRegisterScreen();
+}
 
   // Сохранение всех пользователей
   function saveAllUsers(users) {
@@ -214,113 +234,132 @@
     switchTab("profile");
   }
 
-  function switchTab(tab) {
-    var panels = document.querySelectorAll(".panel");
-    for (var i = 0; i < panels.length; i += 1) {
-      var p = panels[i];
-      if (p.getAttribute("data-panel") === tab) {
-        p.classList.add("is-active");
-      } else {
-        p.classList.remove("is-active");
-      }
-    }
+function switchTab(tab) {
+  // Сначала скрываем ВСЕ панели
+  var panels = document.querySelectorAll(".panel");
+  for (var i = 0; i < panels.length; i += 1) {
+    panels[i].classList.remove("is-active");
+  }
+  
+  // Показываем только нужную
+  var activePanel = document.getElementById("panel-" + tab);
+  if (activePanel) {
+    activePanel.classList.add("is-active");
+  }
 
-    var tabs = document.querySelectorAll(".bottom-nav__tab");
-    for (var j = 0; j < tabs.length; j += 1) {
-      var btn = tabs[j];
-      if (btn.getAttribute("data-tab") === tab) {
-        btn.setAttribute("aria-current", "page");
-      } else {
-        btn.removeAttribute("aria-current");
-      }
+  // Обновляем табы в навигации
+  var tabs = document.querySelectorAll(".bottom-nav__tab");
+  for (var j = 0; j < tabs.length; j += 1) {
+    var btn = tabs[j];
+    if (btn.getAttribute("data-tab") === tab) {
+      btn.setAttribute("aria-current", "page");
+    } else {
+      btn.removeAttribute("aria-current");
     }
+  }
 
-    if (tab === "profile") syncBalancesToDom();
-    if (tab === "game") {
+  if (tab === "profile") syncBalancesToDom();
+  
+  // Инициализация игры при переходе
+  if (tab === "game") {
     setTimeout(function() {
-      console.log('🎮 Переключение на вкладку Игра');
       if (typeof window.initCity === 'function') {
         window.initCity();
-      } else {
-        console.error('❌ initCity не найдена!');
       }
-    }, 100);
+    }, 50);
   }
 }
 
 
   // Регистрация нового пользователя
-  function registerUser(nicknameRaw, inviterCode) {
-    var nickname = nicknameRaw.trim();
-    var normalizedNickname = normalizeNickname(nickname);
-    
-    var users = loadAllUsers();
-    
-    // Проверка на существующий никнейм
-    for (var userId in users) {
-      if (users[userId].nicknameLower === normalizedNickname) {
-        return { success: false, error: "Этот ник уже занят. Выберите другой." };
-      }
+// Регистрация нового пользователя
+// Регистрация нового пользователя
+ function registerUser(nicknameRaw, inviterCode) {
+  var nickname = nicknameRaw.trim();
+  var normalizedNickname = normalizeNickname(nickname);
+  
+  var users = loadAllUsers();
+  
+  // Проверка на существующий никнейм
+  for (var userId in users) {
+    if (users[userId].nicknameLower === normalizedNickname) {
+      return { success: false, error: "Этот ник уже занят. Выберите другой." };
     }
-    
-    // Проверка длины никнейма
-    if (nickname.length < 2) {
-      return { success: false, error: "Никнейм слишком короткий." };
-    }
-    
-    // Создаём нового пользователя
-    var newUser = {
-      id: window._tempRegistration.id,
-      nickname: nickname,
-      nicknameLower: normalizedNickname,
-      referralCode: window._tempRegistration.referralCode,
-      referralLink: window._tempRegistration.referralLink,
-      inviterReferral: inviterCode || "",
-      balanceSkillPoints: 0,
-      balanceMtBanks: 0,
-      createdAt: Date.now()
-    };
-    
-    // Начисление бонуса за реферальный код
-    if (inviterCode && inviterCode.trim() !== "") {
-      var inviterFound = false;
-      for (var uid in users) {
-        if (users[uid].referralCode === inviterCode) {
-          inviterFound = true;
-          // Начисляем бонус новому пользователю
-          newUser.balanceSkillPoints = 1000;
-          newUser.balanceMtBanks = 1000;
-          break;
-        }
-      }
-      if (!inviterFound) {
-        return { success: false, error: "Неверный реферальный код." };
-      }
-    }
-    
-    // Сохраняем пользователя
-    users[newUser.id] = newUser;
-    saveAllUsers(users);
-    setCurrentUser(newUser.id);
-    
-    return { success: true, user: newUser };
   }
   
-  // Вход в аккаунт
-  function loginUser(id, nickname) {
-    var users = loadAllUsers();
-    var normalizedNickname = normalizeNickname(nickname);
-    
-    for (var userId in users) {
-      var user = users[userId];
-      if (user.id === id && user.nicknameLower === normalizedNickname) {
-        setCurrentUser(userId);
-        return { success: true, user: user };
+  // Проверка длины никнейма
+  if (nickname.length < 2) {
+    return { success: false, error: "Никнейм слишком короткий." };
+  }
+  
+  // Создаём нового пользователя
+  var newUser = {
+    id: window._tempRegistration.id,
+    nickname: nickname,
+    nicknameLower: normalizedNickname,
+    referralCode: window._tempRegistration.referralCode,
+    referralLink: window._tempRegistration.referralLink,
+    inviterReferral: inviterCode || "",
+    balanceSkillPoints: 0,
+    balanceMtBanks: 2000,
+    createdAt: Date.now()
+  };
+  
+  // Начисление бонуса за реферальный код
+  if (inviterCode && inviterCode.trim() !== "") {
+    var inviterFound = false;
+    for (var uid in users) {
+      if (users[uid].referralCode === inviterCode) {
+        inviterFound = true;
+        newUser.balanceSkillPoints = 1000;
+        newUser.balanceMtBanks = 3000;
+        break;
       }
     }
-    
-    return { success: false, error: "Неверный ID или никнейм." };
+    if (!inviterFound) {
+      return { success: false, error: "Неверный реферальный код." };
+    }
   }
+  
+  // Сохраняем пользователя
+  users[newUser.id] = newUser;
+  saveAllUsers(users);
+  setCurrentUser(newUser.id);
+  
+  // 🔴 ПОЛНОСТЬЮ ОЧИЩАЕМ ВСЕ ДАННЫЕ ИГРЫ
+  // Удаляем все возможные ключи
+  localStorage.removeItem('mtbank_city_buildings');
+  localStorage.removeItem('mtbank_city_buildings_v6');
+  localStorage.removeItem('mtbank_city_buildings_v7');
+  localStorage.removeItem(`mtbank_city_buildings_${newUser.id}`);
+  
+  // Сбрасываем игру в памяти
+  if (typeof window.resetCity === 'function') {
+    window.resetCity();
+  }
+  
+  console.log('✅ Новый пользователь создан, игра сброшена');
+  
+  return { success: true, user: newUser };
+}
+
+  // Вход в аккаунт
+// Вход в аккаунт
+ function loginUser(id, nickname) {
+  var users = loadAllUsers();
+  var normalizedNickname = normalizeNickname(nickname);
+  
+  for (var userId in users) {
+    var user = users[userId];
+    if (user.id === id && user.nicknameLower === normalizedNickname) {
+      setCurrentUser(userId);
+      // 🔴 ПРИ ВХОДЕ НЕ СБРАСЫВАЕМ ИГРУ — загружаем сохранённые данные
+      return { success: true, user: user };
+    }
+  }
+  
+  return { success: false, error: "Неверный ID или никнейм." };
+}
 
   // Проверка авторизации при загрузке страницы
   function checkAuthAndRedirect() {
@@ -330,6 +369,7 @@
     } else {
       showRegisterScreen();
     }
+    
   }
 
   // ========== НАЧАЛО БЛОКА ИГРЫ ==========

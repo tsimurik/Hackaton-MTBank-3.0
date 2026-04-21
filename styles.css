@@ -168,19 +168,50 @@ body {
 }
 
 .panel {
-  display: none;
+  display: none !important;
   width: 100%;
-  max-width: 480px;
+  max-width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
 }
 
 .panel.is-active {
-  display: block;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+#panel-game {
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+  display: none !important;
 }
 
 .card--panel {
   padding: 28px 24px 32px;
   max-width: 480px;
   margin: 0 auto;
+}
+
+#panel-game.is-active {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#panel-leaderboard,
+#panel-shop,
+#panel-profile {
+  display: none !important;
+}
+
+#panel-leaderboard.is-active,
+#panel-shop.is-active,
+#panel-profile.is-active {
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 .panel__title {
