@@ -1,4 +1,4 @@
-// 🏙️ MtBank City — БАНК-РАТУША В ЦЕНТРЕ + BUSINESS CENTER
+// 🏙️ MtBank City — ФИНАЛЬНАЯ РАБОЧАЯ ВЕРСИЯ
 console.log('🚀 city-game.js загружается...');
 
 // ========== КОНФИГУРАЦИЯ ВСЕХ 15 ЗДАНИЙ ==========
@@ -17,7 +17,7 @@ const DEFS = [
   {id:'itoffice', name:'ИТ-офис', cat:'🏢 Средний', inc:22, uc:250, maxLv:5, bc:220, bg:'#c0e0ff', sprite:'itoffice.png'},
   {id:'gasstation', name:'Заправка', cat:'🏢 Средний', inc:17, uc:190, maxLv:5, bc:170, bg:'#ffe0c0', sprite:'gasstation.png'},
   
-  // КАТЕГОРИЯ 3 — ЭЛИТНЫЕ (БАНК ЗАМЕНЁН НА BUSINESS CENTER)
+  // КАТЕГОРИЯ 3 — ЭЛИТНЫЕ
   {id:'business', name:'Бизнес-центр', cat:'🏦 Элит', inc:45, uc:400, maxLv:5, bc:500, bg:'#e0eeff', sprite:'business-center.png'},
   {id:'cinema', name:'Кинотеатр', cat:'🏦 Элит', inc:50, uc:450, maxLv:5, bc:550, bg:'#e0d0ff', sprite:'cinema.png'},
   {id:'construction', name:'Стройка', cat:'🏦 Элит', inc:55, uc:500, maxLv:5, bc:600, bg:'#ffe8a0', sprite:'construction.png'},
@@ -25,12 +25,11 @@ const DEFS = [
   {id:'mall', name:'ТЦ', cat:'🏦 Элит', inc:60, uc:550, maxLv:5, bc:700, bg:'#ffd0e0', sprite:'mall.png'}
 ];
 
-// ОТДЕЛЬНАЯ КОНФИГУРАЦИЯ ДЛЯ РАТУШИ (НЕ ДОСТУПНА В МАГАЗИНЕ)
 const TOWNHALL_DEF = {id:'bank', name:'🏦 БАНК (Ратуша)', cat:'👑 Ратуша', inc:30, uc:500, maxLv:5, bc:0, bg:'#f5e6a0', sprite:'bank.png'};
 
 const DM = {};
 DEFS.forEach(d => DM[d.id] = d);
-DM['bank'] = TOWNHALL_DEF; // Добавляем для отображения ратуши
+DM['bank'] = TOWNHALL_DEF;
 
 const CATEGORIES = {
   starter: DEFS.slice(0, 5),
@@ -46,23 +45,24 @@ const buildings = {};
 let isoContainer, coinDisplay, levelDisplay, tileElements = {}, popupOverlay, buildOverlay, notifEl, notifyTimeout;
 let currentCategory = 'starter';
 let cameraZoom = 1.3;
+let cameraX = 0, cameraY = 0;
+let isDragging = false, hasMoved = false;
+let dragStartX = 0, dragStartY = 0;
+let dragCameraStartX = 0, dragCameraStartY = 0;
+let initialPinchDistance = 0, initialZoom = 1.3;
 
 // ========== ФУНКЦИИ ДЛЯ PNG СПРАЙТОВ ==========
 function getBldSpriteHTML(id, level) {
   const def = DM[id];
   if (!def) return '';
   
-  const spritePath = SPRITE_PATH + def.sprite;
-  const scale = 0.85 + (level * 0.04);
-  const size = Math.floor(60 * scale);
-  const isTownhall = (id === 'bank');
+  const size = 55;
   
   return `
-    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:${size}px;height:${size}px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;pointer-events:none;filter:drop-shadow(0 6px 4px rgba(0,0,0,0.35));">
-      <img src="${spritePath}" alt="${def.name}" style="width:100%;height:100%;object-fit:contain;image-rendering:crisp-edges;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+    <div style="position:absolute;bottom:28px;left:50%;transform:translateX(-50%);width:${size}px;height:${size}px;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;filter:drop-shadow(0 6px 4px rgba(0,0,0,0.35));">
+      <img src="${SPRITE_PATH}${def.sprite}" alt="${def.name}" style="width:100%;height:100%;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
       <div style="display:none;width:100%;height:100%;background:${def.bg};border-radius:8px;align-items:center;justify-content:center;font-size:24px;font-weight:bold;color:#333;border:2px dashed #999;">${def.name.charAt(0)}</div>
-      ${isTownhall ? '<div style="position:absolute;top:-15px;font-size:20px;"></div>' : ''}
-      <div style="margin-top:2px;background:rgba(0,0,0,0.6);color:#fff;padding:2px 6px;border-radius:12px;font-size:9px;font-weight:bold;white-space:nowrap;">Lv.${level}</div>
+      <div style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);color:#fff;padding:2px 6px;border-radius:12px;font-size:9px;font-weight:bold;white-space:nowrap;">Lv.${level}</div>
     </div>
   `;
 }
@@ -72,14 +72,14 @@ function getPreviewSpriteHTML(id) {
   if (!def) return '';
   
   return `
-    <div style="width:70px;height:70px;display:flex;align-items:center;justify-content:center;">
+    <div style="width:65px;height:65px;display:flex;align-items:center;justify-content:center;">
       <img src="${SPRITE_PATH}${def.sprite}" alt="${def.name}" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 4px rgba(0,0,0,0.3));" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
       <div style="display:none;width:100%;height:100%;background:${def.bg};border-radius:12px;align-items:center;justify-content:center;font-size:32px;font-weight:bold;color:#555;">${def.name.charAt(0)}</div>
     </div>
   `;
 }
 
-// ========== ПЛИТКА (РАТУША ВЫДЕЛЕНА) ==========
+// ========== ПЛИТКА ==========
 function tileBg(r, c) {
   const isTownhall = (r === 2 && c === 2);
   const sh = isTownhall ? '#f5d060' : ((r + c) % 2 === 0 ? '#72c85a' : '#68ba50');
@@ -88,8 +88,8 @@ function tileBg(r, c) {
   const strokeColor = isTownhall ? '#ffd700' : '#58a840';
   
   return `
-    <svg viewBox="0 0 72 64" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:72px;height:64px;pointer-events:none">
-      <polygon points="36,1 71,19 36,37 1,19" fill="${sh}" stroke="${strokeColor}" stroke-width="${isTownhall ? '2.5' : '0.8'}"/>
+    <svg viewBox="0 0 72 64" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;">
+      <polygon points="36,1 71,19 36,37 1,19" fill="${sh}" stroke="${strokeColor}" stroke-width="${isTownhall ? '2.5' : '1.5'}"/>
       <polygon points="1,19 36,37 36,52 1,34" fill="${lsh}"/>
       <polygon points="36,37 71,19 71,34 36,52" fill="${rsh}"/>
     </svg>
@@ -101,7 +101,7 @@ function makeTile(r, c) {
   const b = buildings[key];
   
   const bldHTML = b ? getBldSpriteHTML(b.id, b.lv) : `
-    <div style="position:absolute;top:12px;left:12px;width:48px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(255,255,255,.18);border:2px dashed rgba(255,255,255,.55);font-size:18px;color:rgba(255,255,255,.75);">+</div>
+    <div style="position:absolute;top:40%;left:50%;transform:translate(-50%, -50%);width:40px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(255,255,255,.2);border:2px dashed rgba(255,255,255,.6);font-size:16px;color:rgba(255,255,255,.9);pointer-events:none;">+</div>
   `;
   
   const dot = b ? `<div class="city-dot" id="dot-${key}"></div>` : '';
@@ -111,11 +111,10 @@ function makeTile(r, c) {
 
 // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
 function loadBuildings() {
-  const saved = localStorage.getItem('mtbank_city_buildings_v6');
+  const saved = localStorage.getItem('mtbank_city_buildings_v7');
   if (saved) {
     Object.assign(buildings, JSON.parse(saved));
   } else {
-    // ТОЛЬКО РАТУША В ЦЕНТРЕ ПРИ СТАРТЕ
     buildings['2,2'] = {id:'bank', lv:1, acc:0, tick:Date.now()};
   }
   
@@ -123,34 +122,31 @@ function loadBuildings() {
   if (user) { cityCoins = user.balanceMtBanks || 2000; updateCoins(); }
 }
 
-function saveBuildings() { localStorage.setItem('mtbank_city_buildings_v6', JSON.stringify(buildings)); }
+function saveBuildings() { localStorage.setItem('mtbank_city_buildings_v7', JSON.stringify(buildings)); }
 
 function renderGrid() {
   if (!isoContainer) return;
   
-  const container = isoContainer.parentElement;
-  const containerWidth = container.clientWidth;
-  const scale = Math.min(1, containerWidth / 500);
-  const TW = 90 * scale, TH = 48 * scale;
+  const TW = 90, TH = 48;
+  const CW = GRID * TW, CH = GRID * (TH / 2) + TH + 80;
   
-  const CW = GRID * TW, CH = GRID * (TH / 2) + TH + 80 * scale;
   isoContainer.style.width = CW + 'px';
   isoContainer.style.height = CH + 'px';
-  isoContainer.style.transform = `scale(${cameraZoom})`;
   isoContainer.style.transformOrigin = 'center center';
-  isoContainer.style.transition = 'transform 0.1s ease';
   isoContainer.innerHTML = '';
   tileElements = {};
   
   for (let r = 0; r < GRID; r++) {
     for (let c = 0; c < GRID; c++) {
       const sx = (c - r) * (TW / 2) + CW / 2 - TW / 2;
-      const sy = (c + r) * (TH / 2) + 20 * scale;
+      const sy = (c + r) * (TH / 2) + 15;
       const key = `${r},${c}`;
       
       const div = document.createElement('div');
       div.className = 'city-tile';
-      div.style.cssText = `left:${sx}px;top:${sy}px;width:${72*scale}px;height:${64*scale}px;transform:scale(${scale});transform-origin:top left;`;
+      div.style.cssText = `left:${sx}px;top:${sy}px;width:72px;height:64px;`;
+      div.style.pointerEvents = 'auto';
+      div.style.zIndex = '10';
       div.innerHTML = makeTile(r, c);
       div.onclick = () => onTileClick(r, c);
       
@@ -159,7 +155,21 @@ function renderGrid() {
     }
   }
   
+  updateCameraTransform();
   updateDots();
+}
+
+function updateCameraTransform() {
+  if (isoContainer) {
+    isoContainer.style.transform = `translate(${cameraX}px, ${cameraY}px) scale(${cameraZoom})`;
+  }
+}
+
+function resetCamera() {
+  cameraX = 0;
+  cameraY = 0;
+  cameraZoom = 1.3;
+  updateCameraTransform();
 }
 
 function updateDots() {
@@ -186,6 +196,7 @@ function refreshTile(key) {
 }
 
 function onTileClick(r, c) {
+  if (hasMoved) return;
   const key = `${r},${c}`;
   buildings[key] ? openPopup(key) : (pendingTile = key, openBuildMenu());
 }
@@ -230,7 +241,7 @@ function openBuildMenu() {
       const div = document.createElement('div');
       div.className = 'build-item';
       div.innerHTML = `
-        <div style="width:58px;height:65px;position:relative;overflow:visible">${getPreviewSpriteHTML(d.id)}</div>
+        <div style="width:58px;height:65px;">${getPreviewSpriteHTML(d.id)}</div>
         <div class="build-item-name">${d.name}</div>
         <div class="build-item-cost">🪙${d.bc}</div>
       `;
@@ -345,20 +356,92 @@ function burst() {
   });
 }
 
-function setupZoom() {
+function setupCameraControls() {
   const gameArea = document.querySelector('.city-game-area');
   if (!gameArea) return;
   
+  cameraZoom = 1.3;
+  
+  // Зум колёсиком
   gameArea.addEventListener('wheel', (e) => {
     e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.05 : 0.05;
-    cameraZoom = Math.min(2.0, Math.max(1.0, cameraZoom + delta));
-    if (isoContainer) isoContainer.style.transform = `scale(${cameraZoom})`;
+    cameraZoom = Math.min(2.2, Math.max(0.9, cameraZoom + (e.deltaY > 0 ? -0.05 : 0.05)));
+    updateCameraTransform();
   }, { passive: false });
+  
+  // Перемещение ТОЛЬКО при зажатии на ПУСТОМ месте
+  gameArea.addEventListener('mousedown', (e) => {
+    // Не перетаскиваем если кликнули по плитке
+    if (e.target.closest('.city-tile')) return;
+    
+    isDragging = true;
+    dragStartX = e.clientX; 
+    dragStartY = e.clientY;
+    dragCameraStartX = cameraX; 
+    dragCameraStartY = cameraY;
+    gameArea.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+  
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    cameraX = dragCameraStartX + (e.clientX - dragStartX);
+    cameraY = dragCameraStartY + (e.clientY - dragStartY);
+    updateCameraTransform();
+  });
+  
+  window.addEventListener('mouseup', () => { 
+    isDragging = false; 
+    if (gameArea) gameArea.style.cursor = 'default';
+  });
+  
+  // Touch для телефона — ТОЛЬКО на пустом месте
+  gameArea.addEventListener('touchstart', (e) => {
+    // Если кликнули по плитке — не перетаскиваем
+    if (e.target.closest('.city-tile')) return;
+    
+    if (e.touches.length === 1) {
+      isDragging = true;
+      dragStartX = e.touches[0].clientX; 
+      dragStartY = e.touches[0].clientY;
+      dragCameraStartX = cameraX; 
+      dragCameraStartY = cameraY;
+    } else if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      initialPinchDistance = Math.sqrt(dx*dx + dy*dy);
+      initialZoom = cameraZoom;
+    }
+  }, { passive: false });
+  
+  gameArea.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 1 && isDragging) {
+      e.preventDefault();
+      cameraX = dragCameraStartX + (e.touches[0].clientX - dragStartX);
+      cameraY = dragCameraStartY + (e.touches[0].clientY - dragStartY);
+      updateCameraTransform();
+    } else if (e.touches.length === 2) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const distance = Math.sqrt(dx*dx + dy*dy);
+      if (initialPinchDistance > 0) {
+        cameraZoom = Math.min(2.2, Math.max(0.9, initialZoom * (distance / initialPinchDistance)));
+        updateCameraTransform();
+      }
+    }
+  }, { passive: false });
+  
+  gameArea.addEventListener('touchend', () => { 
+    isDragging = false; 
+    initialPinchDistance = 0;
+  });
+  
+  gameArea.style.cursor = 'default';
 }
 
 function bindEvents() {
-  document.getElementById('city-stats-btn')?.addEventListener('click', showStats);
+  document.getElementById('city-reset-camera')?.addEventListener('click', resetCamera);
   document.getElementById('city-build-btn')?.addEventListener('click', () => { pendingTile = null; openBuildMenu(); });
   document.getElementById('city-collect-all-btn')?.addEventListener('click', collectAll);
   document.getElementById('popup-close-btn')?.addEventListener('click', closePopup);
@@ -369,30 +452,46 @@ function bindEvents() {
 }
 
 // ========== ИНИЦИАЛИЗАЦИЯ ==========
+let cityInitialized = false;
+
 window.initCity = function() {
-  console.log('🏗 initCity запущен');
   const panel = document.getElementById('panel-game');
-  if (!panel) return;
+  if (!panel) {
+    console.error('❌ panel-game не найден');
+    return;
+  }
+  
+  // Если контейнер пустой или игра была удалена — сбрасываем флаг
+  if (!panel.querySelector('.city-game-wrap')) {
+    console.log('🔄 Контейнер пуст, сбрасываем флаг');
+    cityInitialized = false;
+  }
+  
+  if (cityInitialized) {
+    console.log('⚠️ Город уже инициализирован');
+    return;
+  }
+  
+  console.log('🏗 initCity запущен');
   
   panel.innerHTML = `
     <div class="city-game-wrap" style="height:100%;display:flex;flex-direction:column;">
-      <div class="city-bg"></div>
       <div class="city-hud">
         <div class="city-coins"><div class="coin-icon">M</div><span id="city-coin-display">2000</span></div>
         <div class="city-title">🏙 MtBank City</div>
         <div class="city-level">Lv.<span id="city-level-display">1</span></div>
       </div>
-      <div class="city-game-area" style="flex:1;display:flex;align-items:center;justify-content:center;overflow:visible;min-height:0;">
+      <div class="city-game-area" style="flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;">
         <div id="city-iso" style="position:relative;"></div>
       </div>
       <div class="city-bar">
-        <button class="city-bar-btn" id="city-stats-btn"><span class="city-bar-icon">📊</span><span class="city-bar-label">Статы</span></button>
-        <button class="city-bar-btn primary" id="city-build-btn"><span class="city-bar-icon">🏗</span><span class="city-bar-label">Строить</span></button>
-        <button class="city-bar-btn" id="city-collect-all-btn"><span class="city-bar-icon">💰</span><span class="city-bar-label">Собрать</span></button>
+        <button class="city-bar-btn" id="city-reset-camera"><span>🎯</span><span>Центр</span></button>
+        <button class="city-bar-btn primary" id="city-build-btn"><span>🏗</span><span>Строить</span></button>
+        <button class="city-bar-btn" id="city-collect-all-btn"><span>💰</span><span>Собрать</span></button>
       </div>
     </div>
-    <div class="city-popup-overlay" id="city-popup"><div class="city-popup"><div class="popup-header"><div><div class="popup-name" id="popup-name">Здание</div><div class="popup-type" id="popup-type">Тип</div></div><button class="popup-close" id="popup-close-btn">✕</button></div><div class="popup-preview" id="popup-preview"></div><div class="popup-progress-bar"><div class="popup-progress" id="popup-progress" style="width:20%"></div></div><div class="popup-progress-text" id="popup-progress-text">Уровень 1 / 5</div><div class="popup-stats"><div class="stat-card"><div class="stat-label">Доход/час</div><div class="stat-value gold" id="popup-income">5 MtB</div></div><div class="stat-card"><div class="stat-label">Накоплено</div><div class="stat-value gold" id="popup-acc">0 MtB</div></div><div class="stat-card"><div class="stat-label">Уровень</div><div class="stat-value" id="popup-level">1</div></div><div class="stat-card"><div class="stat-label">Апгрейд</div><div class="stat-value gold" id="popup-upcost">100 MtB</div></div></div><div class="popup-buttons"><button class="btn-collect" id="popup-collect">💰 Забрать</button><button class="btn-upgrade" id="popup-upgrade">⬆ Улучшить</button></div></div></div>
-    <div class="build-overlay" id="build-overlay"><div class="build-menu"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-family:'Nunito',sans-serif;font-size:17px;font-weight:900;color:#152a20">Выберите здание</div><button class="popup-close" id="build-close-btn">✕</button></div><div class="build-grid" id="build-grid"></div></div></div>
+    <div class="city-popup-overlay" id="city-popup"><div class="city-popup"><div class="popup-header"><div><div class="popup-name" id="popup-name"></div><div class="popup-type" id="popup-type"></div></div><button class="popup-close" id="popup-close-btn">✕</button></div><div class="popup-preview" id="popup-preview"></div><div class="popup-progress-bar"><div class="popup-progress" id="popup-progress"></div></div><div class="popup-progress-text" id="popup-progress-text"></div><div class="popup-stats"><div class="stat-card"><div class="stat-label">Доход/час</div><div class="stat-value gold" id="popup-income"></div></div><div class="stat-card"><div class="stat-label">Накоплено</div><div class="stat-value gold" id="popup-acc"></div></div><div class="stat-card"><div class="stat-label">Уровень</div><div class="stat-value" id="popup-level"></div></div><div class="stat-card"><div class="stat-label">Апгрейд</div><div class="stat-value gold" id="popup-upcost"></div></div></div><div class="popup-buttons"><button class="btn-collect" id="popup-collect">💰 Забрать</button><button class="btn-upgrade" id="popup-upgrade">⬆ Улучшить</button></div></div></div>
+    <div class="build-overlay" id="build-overlay"><div class="build-menu"><div style="display:flex;justify-content:space-between;margin-bottom:14px"><div>Выберите здание</div><button id="build-close-btn">✕</button></div><div class="build-grid" id="build-grid"></div></div></div>
     <div class="city-notif" id="city-notif"></div>
   `;
   
@@ -403,33 +502,31 @@ window.initCity = function() {
   buildOverlay = document.getElementById('build-overlay');
   notifEl = document.getElementById('city-notif');
   
-  // Очищаем старые данные при первом запуске
-  localStorage.removeItem('mtbank_city_buildings_v6');
+  // Проверяем, что все элементы созданы
+  if (!isoContainer) {
+    console.error('❌ isoContainer не создан');
+    return;
+  }
   
   loadBuildings();
   renderGrid();
   bindEvents();
-  setupZoom();
+  setupCameraControls();
   updateCoins();
   
   document.getElementById('build-close-btn')?.addEventListener('click', closeBuildMenu);
   
   setInterval(() => { tickBuildings(); updateDots(); }, 3000);
-  setInterval(updateDots, 700);
   
-  window.addEventListener('resize', () => { if (isoContainer) renderGrid(); });
-  
-  console.log('✅ Город отрисован! Банк-ратуша в центре, Business Center в магазине');
+  cityInitialized = true;
+  console.log('✅ Город отрисован!');
 };
 
-// Запуск
-var waitInterval = setInterval(function() {
+// Явный вызов при загрузке скрипта
+setTimeout(function() {
   var panel = document.getElementById('panel-game');
-  if (panel) {
-    clearInterval(waitInterval);
-    console.log('🚀 Запускаем город');
+  if (panel && panel.classList.contains('is-active')) {
+    console.log('🚀 Автозапуск города');
     window.initCity();
   }
 }, 300);
-
-console.log('✅ city-game.js загружен');

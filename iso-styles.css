@@ -1,49 +1,30 @@
-/* 🎮 ИГРА НА ВЕСЬ ЭКРАН — ОПТИМИЗИРОВАНО */
-
 #panel-game {
   padding: 0 !important;
   margin: 0 !important;
-  max-width: 100% !important;
-  width: 100% !important;
   height: 100% !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
+  width: 100% !important;
   display: flex !important;
   flex-direction: column !important;
-  background: #25b0a0 !important;
-  position: relative !important;
 }
+
 
 .city-game-wrap {
   width: 100% !important;
   height: 100% !important;
-  min-height: 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  background: linear-gradient(180deg, #4ec9e8 0%, #8ee8f7 52%, #25b0a0 52%) !important;
-  position: relative !important;
-  overflow: hidden !important;
-  flex: 1 1 auto !important;
-}
-
-.city-bg {
-  position: absolute;
-  inset: 0;
-  background: transparent;
-  pointer-events: none;
+  background: linear-gradient(180deg, #4ec9e8 0%, #8ee8f7 52%, #25b0a0 52%);
+  position: relative;
 }
 
 .city-hud {
-  position: relative;
-  z-index: 20;
   display: flex;
   justify-content: space-between;
-  align-items: center;
   padding: 10px 14px;
   background: rgba(0,0,0,.15);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(255,255,255,.2);
   flex-shrink: 0;
+  pointer-events: auto;
 }
 
 .city-coins {
@@ -52,8 +33,7 @@
   gap: 6px;
   background: rgba(255,255,255,.95);
   border-radius: 30px;
-  padding: 5px 14px 5px 8px;
-  box-shadow: 0 3px 0 #1a5a1a, 0 2px 6px rgba(0,0,0,.2);
+  padding: 5px 14px;
 }
 
 .coin-icon {
@@ -61,147 +41,89 @@
   height: 26px;
   border-radius: 50%;
   background: linear-gradient(140deg, #ffdc1e, #f0a000);
-  border: 2px solid #c77a00;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  font-size: 12px;
   color: #7a4500;
 }
 
-.city-coins span {
-  font-family: 'Nunito', sans-serif;
-  font-size: 16px;
-  font-weight: 800;
-  color: #1a3520;
-}
-
 .city-title {
-  font-family: 'Nunito', sans-serif;
   font-size: 16px;
   font-weight: 900;
   color: #fff;
-  text-shadow: 0 2px 4px rgba(0,0,0,.3);
 }
 
 .city-level {
   background: rgba(255,255,255,.25);
   border-radius: 20px;
   padding: 5px 12px;
-  font-family: 'Nunito', sans-serif;
-  font-size: 13px;
-  font-weight: 800;
   color: #fff;
-  backdrop-filter: blur(4px);
 }
 
-/* ИГРОВАЯ ОБЛАСТЬ — ЗАНИМАЕТ ВСЁ СВОБОДНОЕ ПРОСТРАНСТВО */
 .city-game-area {
-  position: relative;
-  z-index: 1;
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: visible;
-  padding: 5px;
+  overflow: hidden;
+  position: relative;
 }
 
 #city-iso {
   position: relative;
-  display: block;
-  margin: 0 auto;
+  pointer-events: auto !important;  /* ✅ ИСПРАВЛЕНО */
 }
 
-/* Плитки */
 .city-tile {
   position: absolute;
   cursor: pointer;
-  transition: transform 0.15s, filter 0.15s;
-}
-
-.city-tile:hover {
-  transform: translateY(-4px);
-  filter: brightness(1.1);
+  pointer-events: auto !important;
+  -webkit-tap-highlight-color: transparent;
   z-index: 10;
 }
 
-.city-bubble {
-  position: absolute;
-  background: #fff;
-  border: 2px solid #e8b800;
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-family: 'Nunito', sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  color: #8a5800;
-  white-space: nowrap;
+.city-tile * {
   pointer-events: none;
-  z-index: 50;
-  left: 50%;
-  transform: translateX(-50%) translateY(0);
-  transition: opacity .3s, transform .3s;
-  opacity: 0;
-  box-shadow: 0 2px 6px rgba(0,0,0,.15);
-}
-
-.city-bubble.visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(-12px);
 }
 
 .city-dot {
   position: absolute;
   top: 2px;
   right: 2px;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   background: #22c55e;
   border: 2px solid #fff;
   border-radius: 50%;
   display: none;
-  z-index: 51;
-  animation: pulse-dot 1s infinite;
-  box-shadow: 0 2px 4px rgba(0,0,0,.2);
+  pointer-events: none;
 }
 
-@keyframes pulse-dot {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.3); }
-}
-
-/* Нижняя панель игры */
 .city-bar {
-  position: relative;
-  z-index: 20;
-  background: rgba(255,255,255,.98);
-  padding: 8px 14px 12px;
   display: flex;
-  align-items: center;
-  justify-content: space-around;
   gap: 8px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.98);
   border-radius: 20px 20px 0 0;
-  box-shadow: 0 -4px 20px rgba(0,0,0,.1);
-  backdrop-filter: blur(8px);
   flex-shrink: 0;
+  pointer-events: auto;
+  z-index: 100;
 }
 
 .city-bar-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  padding: 8px 12px;
   background: #f0f9f4;
   border: none;
   border-radius: 14px;
-  padding: 8px 12px;
   cursor: pointer;
-  transition: all 0.15s;
-  min-width: 60px;
   box-shadow: 0 3px 0 #c0dcc8;
+  pointer-events: auto;
+  z-index: 101; /* ДОБАВЬТЕ */
+  position: relative;
 }
 
 .city-bar-btn:active {
@@ -209,35 +131,16 @@
   box-shadow: 0 1px 0 #c0dcc8;
 }
 
-.city-bar-icon {
-  font-size: 20px;
-}
-
-.city-bar-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #2d7a50;
-  letter-spacing: .3px;
-  text-transform: uppercase;
-}
-
 .city-bar-btn.primary {
-  background: linear-gradient(135deg, #34d399, #059669);
-  box-shadow: 0 3px 0 #047857;
+  background: #34d399;
   flex: 1;
 }
 
-.city-bar-btn.primary .city-bar-label {
-  color: #022c1a;
-}
-
-/* Попап */
-.city-popup-overlay {
+.city-popup-overlay, .build-overlay {
   position: fixed;
   inset: 0;
   z-index: 1000;
   background: rgba(0,0,0,.5);
-  backdrop-filter: blur(4px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -246,50 +149,37 @@
   transition: opacity .2s;
 }
 
-.city-popup-overlay.open {
+.city-popup-overlay.open, .build-overlay.open {
   opacity: 1;
   pointer-events: all;
 }
 
-.city-popup {
+.city-popup, .build-menu {
   background: #fff;
   border-radius: 24px 24px 0 0;
   width: 100%;
   max-width: 450px;
-  padding: 20px 18px 25px;
+  padding: 20px;
   transform: translateY(100%);
-  transition: transform .25s cubic-bezier(.34,1.4,.64,1);
-  box-shadow: 0 -4px 20px rgba(0,0,0,.2);
+  transition: transform .25s;
   max-height: 80vh;
   overflow-y: auto;
+  pointer-events: auto;
 }
 
-.city-popup-overlay.open .city-popup {
+.city-popup-overlay.open .city-popup,
+.build-overlay.open .build-menu {
   transform: translateY(0);
 }
 
 .popup-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 14px;
 }
 
-.popup-name {
-  font-family: 'Nunito', sans-serif;
-  font-size: 20px;
-  font-weight: 900;
-  color: #152a20;
-}
-
-.popup-type {
-  font-size: 12px;
-  color: #888;
-  font-weight: 600;
-  margin-top: 2px;
-}
-
-.popup-close {
+.popup-close, #build-close-btn {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -297,153 +187,29 @@
   border: none;
   font-size: 16px;
   cursor: pointer;
-  color: #666;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  pointer-events: auto;
 }
 
-.popup-preview {
-  width: 100%;
-  height: 120px;
-  border-radius: 16px;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.popup-progress-bar {
-  background: #e6eeea;
-  border-radius: 8px;
-  height: 7px;
-  overflow: hidden;
-  margin-bottom: 5px;
-}
-
-.popup-progress {
-  height: 100%;
-  border-radius: 8px;
-  background: linear-gradient(90deg, #22c55e, #16a34a);
-  transition: width .3s;
-}
-
-.popup-progress-text {
-  font-size: 11px;
-  color: #888;
-  font-weight: 600;
-  margin-bottom: 14px;
-}
-
-.popup-stats {
+.build-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  margin-bottom: 16px;
 }
 
-.stat-card {
+.build-item {
   background: #f7faf8;
-  border-radius: 12px;
-  padding: 10px;
-}
-
-.stat-label {
-  font-size: 10px;
-  color: #9aa;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .4px;
-  margin-bottom: 3px;
-}
-
-.stat-value {
-  font-family: 'Nunito', sans-serif;
-  font-size: 15px;
-  font-weight: 800;
-  color: #152a20;
-}
-
-.stat-value.gold {
-  color: #b87300;
-}
-
-.popup-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.btn-collect, .btn-upgrade {
-  flex: 1;
-  border: none;
   border-radius: 14px;
-  padding: 14px;
-  font-family: 'Nunito', sans-serif;
-  font-size: 14px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: transform .1s, box-shadow .1s;
-}
-
-.btn-collect {
-  background: linear-gradient(135deg, #ffd830, #f0a000);
-  color: #7a4500;
-  box-shadow: 0 4px 0 #c07a00;
-}
-
-.btn-upgrade {
-  background: linear-gradient(135deg, #34d399, #059669);
-  color: #022c1a;
-  box-shadow: 0 4px 0 #047857;
-}
-
-.btn-collect:active, .btn-upgrade:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 #c07a00;
-}
-
-.btn-collect:disabled, .btn-upgrade:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Меню постройки */
-.build-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0,0,0,.5);
-  backdrop-filter: blur(4px);
+  padding: 10px;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .2s;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
-.build-overlay.open {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.build-menu {
-  background: #fff;
-  border-radius: 24px 24px 0 0;
-  width: 100%;
-  max-width: 450px;
-  padding: 20px 16px 25px;
-  transform: translateY(100%);
-  transition: transform .25s;
-  box-shadow: 0 -4px 20px rgba(0,0,0,.2);
-  max-height: 75vh;
-  overflow-y: auto;
-}
-
-.build-overlay.open .build-menu {
-  transform: translateY(0);
+.build-item:active {
+  background: #e8f7ef;
+  transform: scale(0.98);
 }
 
 #build-categories {
@@ -458,142 +224,85 @@
   border: none;
   border-radius: 20px;
   font-weight: bold;
-  font-size: 11px;
   cursor: pointer;
-  box-shadow: 0 3px 0 rgba(0,0,0,0.2);
-  transition: all 0.1s;
+  pointer-events: auto;
 }
 
-.category-tab:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 rgba(0,0,0,0.2);
-}
-
-.build-grid {
+.popup-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
+  margin: 16px 0;
 }
 
-.build-item {
+.stat-card {
   background: #f7faf8;
-  border-radius: 14px;
-  padding: 10px 5px;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.popup-buttons {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  gap: 10px;
+}
+
+.btn-collect, .btn-upgrade {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  font-weight: bold;
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: all .15s;
-  box-shadow: 0 2px 4px rgba(0,0,0,.05);
+  pointer-events: auto;
 }
 
-.build-item:active {
-  border-color: #22c55e;
-  background: #e8f7ef;
-  transform: scale(.98);
+.btn-collect {
+  background: #ffd830;
+  color: #7a4500;
 }
 
-.build-item-name {
-  font-size: 10px;
-  font-weight: 700;
-  color: #152a20;
-  text-align: center;
+.btn-upgrade {
+  background: #34d399;
+  color: #022c1a;
 }
 
-.build-item-cost {
-  font-size: 9px;
-  color: #b87300;
-  font-weight: 700;
+.btn-collect:active, .btn-upgrade:active {
+  transform: translateY(2px);
 }
 
-/* Уведомление */
+.btn-collect:disabled, .btn-upgrade:disabled {
+  opacity: 0.5;
+}
+
 .city-notif {
   position: fixed;
   top: 70px;
   left: 50%;
-  transform: translateX(-50%) translateY(-20px);
+  transform: translateX(-50%);
   background: #152a20;
   color: #fff;
-  font-family: 'Nunito', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
   padding: 8px 20px;
   border-radius: 40px;
   z-index: 2000;
   opacity: 0;
-  transition: opacity .25s, transform .25s;
-  white-space: nowrap;
+  transition: opacity .25s;
   pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,.3);
 }
 
 .city-notif.show {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
 }
 
-/* Анимации */
-.city-float-coin {
+.city-float-coin, .city-sparkle {
   position: fixed;
   pointer-events: none;
-  font-family: 'Nunito', sans-serif;
-  font-size: 16px;
-  font-weight: 900;
-  color: #d08000;
   z-index: 1500;
-  animation: float-up .9s ease-out forwards;
-  text-shadow: 0 2px 4px rgba(0,0,0,.2);
 }
 
-@keyframes float-up {
-  0% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-60px); }
-}
-
-.city-sparkle {
-  position: fixed;
-  pointer-events: none;
-  font-size: 28px;
-  z-index: 1500;
-  animation: sparkle .6s ease-out forwards;
-}
-
-@keyframes sparkle {
-  0% { opacity: 1; transform: scale(.4); }
-  60% { transform: scale(1.4); }
-  100% { opacity: 0; transform: scale(1); }
-}
-
-/* Адаптив */
-@media (max-width: 480px) {
-  .city-hud {
-    padding: 8px 10px;
-  }
-  
-  .city-title {
-    font-size: 14px;
-  }
-  
-  .build-item-name {
-    font-size: 9px;
-  }
-}
-
-/* Скрываем пузырьки с доходом */
 .city-bubble {
   display: none !important;
 }
 
-/* Плавный зум */
-#city-iso {
-  will-change: transform;
-}
-.city-bubble {
-  display: none !important;
-}
-
-#city-iso {
-  will-change: transform;
+.city-tile:hover {
+  filter: brightness(1.1);
 }

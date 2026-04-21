@@ -236,7 +236,18 @@
     }
 
     if (tab === "profile") syncBalancesToDom();
+    if (tab === "game") {
+    setTimeout(function() {
+      console.log('🎮 Переключение на вкладку Игра');
+      if (typeof window.initCity === 'function') {
+        window.initCity();
+      } else {
+        console.error('❌ initCity не найдена!');
+      }
+    }, 100);
   }
+}
+
 
   // Регистрация нового пользователя
   function registerUser(nicknameRaw, inviterCode) {

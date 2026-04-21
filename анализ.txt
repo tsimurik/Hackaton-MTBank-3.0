@@ -1,0 +1,2085 @@
+=== АНАЛИЗ ПРОЕКТА ===
+
+=== index.html ===
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Регистрация</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="iso-styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <!-- Экран регистрации -->
+  <div id="screen-register" class="screen screen--center">
+    <div class="card card--form">
+      <h1 class="card__title">Создать аккаунт</h1>
+      <form id="form-register" class="form" novalidate>
+        <div class="field">
+          <span class="field__label">Ваш id</span>
+          <p class="field__readonly" id="register-preview-id" aria-live="polite">—</p>
+        </div>
+        <div class="field">
+          <label class="field__label" for="inviter-referral">Реферальный код пригласившего (необязательно)</label>
+          <input class="field__input" id="inviter-referral" name="inviterReferral" type="text" autocomplete="off" maxlength="64" placeholder="Код другого пользователя" />
+        </div>
+        <div class="field">
+          <label class="field__label" for="nickname">Никнейм</label>
+          <input class="field__input" id="nickname" name="nickname" type="text" autocomplete="username" required minlength="2" maxlength="32" placeholder="Уникальное имя" />
+          <p class="field__hint" id="nickname-error" hidden></p>
+        </div>
+        <button type="submit" class="btn btn--pill">Зарегистрироваться</button>
+      </form>
+      <p class="auth-switch">Уже есть аккаунт? <a href="#" id="show-login" class="auth-link">Войти</a></p>
+    </div>
+  </div>
+
+  <!-- Экран входа -->
+  <div id="screen-login" class="screen screen--center" hidden>
+    <div class="card card--form">
+      <h1 class="card__title">Вход в аккаунт</h1>
+      <form id="form-login" class="form" novalidate>
+        <div class="field">
+          <label class="field__label" for="login-id">Ваш ID</label>
+          <input class="field__input" id="login-id" name="loginId" type="text" autocomplete="off" required placeholder="Введите ваш ID" />
+        </div>
+        <div class="field">
+          <label class="field__label" for="login-nickname">Никнейм</label>
+          <input class="field__input" id="login-nickname" name="loginNickname" type="text" autocomplete="username" required placeholder="Введите ваш никнейм" />
+          <p class="field__hint" id="login-error" hidden></p>
+        </div>
+        <button type="submit" class="btn btn--pill">Войти</button>
+      </form>
+      <p class="auth-switch">Нет аккаунта? <a href="#" id="show-register" class="auth-link">Зарегистрироваться</a></p>
+    </div>
+  </div>
+
+  <!-- Основное приложение -->
+  <div id="screen-app" class="screen screen--app is-hidden" hidden>
+    <main class="app-main">
+      <section id="panel-leaderboard" class="panel is-active" data-panel="leaderboard">
+        <div class="card card--panel">
+          <h2 class="panel__title">Лидерборд</h2>
+          <p class="panel__empty">Раздел в разработке.</p>
+        </div>
+      </section>
+      
+      <section id="panel-game" class="panel" data-panel="game">
+        <!-- SVG-город загружается через js/city-game.js -->
+      </section>
+      
+      <section id="panel-shop" class="panel" data-panel="shop">
+        <div class="shop-page">
+          <h2 class="panel__title shop-page__title">Магазин</h2>
+          <div class="shop-grid" role="list">
+            <a class="shop-item" role="listitem" href="product.html?p=apple">
+              <div class="shop-item__inner">
+                <div class="shop-item__visual shop-item__visual--apple" aria-hidden="true">
+                  <svg class="shop-svg" viewBox="0 0 120 120" fill="none">
+                    <defs>
+                      <linearGradient id="ga" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#f6e27a" />
+                        <stop offset="45%" stop-color="#d4a017" />
+                        <stop offset="100%" stop-color="#8b6914" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M62 28c4-12 18-18 28-16-2 10-8 18-18 22 6 4 10 12 10 22 0 22-16 38-36 38S10 78 10 56c0-18 14-32 32-34 6 8 14 10 20 6z" fill="url(#ga)" />
+                    <path d="M58 26c-2-8 2-16 8-20 4 6 4 14 0 20z" fill="#6b8e23" />
+                  </svg>
+                </div>
+                <div class="shop-item__hover">
+                  <p class="shop-item__name">Сертификат в золотое яблоко</p>
+                  <p class="shop-item__desc">Подарочная карта на покупки в сети техники и аксессуаров.</p>
+                </div>
+              </div>
+            </a>
+            <a class="shop-item" role="listitem" href="product.html?p=massage">
+              <div class="shop-item__inner">
+                <div class="shop-item__visual shop-item__visual--spa" aria-hidden="true">
+                  <svg class="shop-svg" viewBox="0 0 120 120" fill="none">
+                    <rect x="18" y="52" width="84" height="36" rx="10" fill="#e8dfd5" stroke="#c4b5a5" stroke-width="2" />
+                    <ellipse cx="60" cy="52" rx="28" ry="10" fill="#f5ebe0" stroke="#c4b5a5" stroke-width="2" />
+                    <path d="M42 40c6-10 18-10 18 0s12-10 18 0" stroke="#9a8b7a" stroke-width="3" stroke-linecap="round" fill="none" />
+                  </svg>
+                </div>
+                <div class="shop-item__hover">
+                  <p class="shop-item__name">Сертификат в массажку</p>
+                  <p class="shop-item__desc">Сеансы релакса и восстановления в выбранном салоне-партнёре.</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+      
+      <section id="panel-profile" class="panel" data-panel="profile">
+        <div class="profile-page">
+          <div class="profile-balances">
+            <div class="card balance-card">
+              <span class="balance-card__label">Баланс очков прокачки</span>
+              <p class="balance-card__value"><span id="profile-balance-skill" class="balance-card__digits">00000000</span></p>
+            </div>
+            <div class="card balance-card">
+              <span class="balance-card__label">Баланс мтбанков</span>
+              <p class="balance-card__value"><span id="profile-balance-mtb" class="balance-card__digits">00000000</span></p>
+            </div>
+          </div>
+          <div class="card card--panel card--profile">
+            <h2 class="panel__title">Профиль</h2>
+            <div class="profile-grid">
+              <div class="profile-item"><span class="profile-item__label">Ваш id</span><p class="profile-item__value" id="profile-id">—</p></div>
+              <div class="profile-item"><span class="profile-item__label">Никнейм</span><p class="profile-item__value" id="profile-nickname">—</p></div>
+              <div class="profile-item profile-item--full">
+                <button type="button" class="btn btn--pill btn--logout" id="btn-logout">Выйти из аккаунта</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav id="bottom-nav" class="bottom-nav">
+      <button type="button" class="bottom-nav__tab" data-tab="leaderboard">🏆 Лидерборд</button>
+      <button type="button" class="bottom-nav__tab" data-tab="game">🎮 Игра</button>
+      <button type="button" class="bottom-nav__tab" data-tab="shop">🛒 Магазин</button>
+      <button type="button" class="bottom-nav__tab" data-tab="profile">👤 Профиль</button>
+    </nav>
+  </div>
+
+  <script src="js/city-game.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
+
+=== app.js ===
+(function () {
+  "use strict";
+
+  var BASE_REF_URL = "https://myapp.com/ref";
+
+  /** Балансы (восьмизначные строки), дальше можно менять переменные — UI обновится через syncBalancesToDom */
+  var balanceSkillPoints = 0;
+  var balanceMtBanks = 0;
+
+  /** Латиница + цифры, длина len */
+  function randomAlphanumeric(len) {
+    var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    var out = "";
+    for (var i = 0; i < len; i += 1) {
+      out += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return out;
+  }
+
+  var STORAGE_KEY = "rr_registered_users"; // Храним всех пользователей
+  var USER_KEY = "rr_current_user_id"; // Храним ID текущего пользователя
+
+  // Загрузка всех пользователей
+  function loadAllUsers() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return {};
+      return JSON.parse(raw);
+    } catch (e) {
+      return {};
+    }
+  }
+
+  // Сохранение всех пользователей
+  function saveAllUsers(users) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+  }
+
+  // Получение текущего пользователя
+  function getCurrentUser() {
+    try {
+      var userId = localStorage.getItem(USER_KEY);
+      if (!userId) return null;
+      var users = loadAllUsers();
+      return users[userId] || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Сохранение текущего пользователя
+  function setCurrentUser(userId) {
+    localStorage.setItem(USER_KEY, userId);
+  }
+
+  // Очистка текущего пользователя (выход)
+  function logout() {
+    localStorage.removeItem(USER_KEY);
+    showRegisterScreen();
+    // Очищаем форму входа
+    var loginIdInput = document.getElementById("login-id");
+    var loginNicknameInput = document.getElementById("login-nickname");
+    if (loginIdInput) loginIdInput.value = "";
+    if (loginNicknameInput) loginNicknameInput.value = "";
+  }
+
+  function normalizeNickname(n) {
+    return String(n).trim().toLowerCase();
+  }
+
+  function refreshRegistrationPreview() {
+    var preUserId = randomAlphanumeric(16);
+    var preReferralCode = randomAlphanumeric(10);
+    var preReferralLink = BASE_REF_URL + "?id=" + encodeURIComponent(preReferralCode);
+
+    var elId = document.getElementById("register-preview-id");
+    if (elId) elId.textContent = preUserId;
+    
+    // Сохраняем временные данные для регистрации
+    window._tempRegistration = {
+      id: preUserId,
+      referralCode: preReferralCode,
+      referralLink: preReferralLink
+    };
+  }
+
+  function syncBalancesToDom() {
+    var elS = document.getElementById("profile-balance-skill");
+    var elM = document.getElementById("profile-balance-mtb");
+    if (elS) elS.textContent = String(balanceSkillPoints).padStart(8, '0');
+    if (elM) elM.textContent = String(balanceMtBanks).padStart(8, '0');
+  }
+
+  // Принудительное обновление профиля из данных пользователя
+  function refreshProfileFromUser() {
+    var currentUser = getCurrentUser();
+    if (!currentUser) return;
+    
+    balanceSkillPoints = currentUser.balanceSkillPoints || 0;
+    balanceMtBanks = currentUser.balanceMtBanks || 0;
+    syncBalancesToDom();
+  }
+
+  function hideRegisterShowApp() {
+    var reg = document.getElementById("screen-register");
+    var login = document.getElementById("screen-login");
+    var app = document.getElementById("screen-app");
+    
+    if (reg) {
+      reg.setAttribute("hidden", "");
+      reg.classList.add("is-hidden");
+    }
+    if (login) {
+      login.setAttribute("hidden", "");
+      login.classList.add("is-hidden");
+    }
+    if (app) {
+      app.removeAttribute("hidden");
+      app.classList.remove("is-hidden");
+    }
+  }
+
+  function showRegisterScreen() {
+    var reg = document.getElementById("screen-register");
+    var login = document.getElementById("screen-login");
+    var app = document.getElementById("screen-app");
+    
+    if (reg) {
+      reg.removeAttribute("hidden");
+      reg.classList.remove("is-hidden");
+      refreshRegistrationPreview();
+    }
+    if (login) {
+      login.setAttribute("hidden", "");
+      login.classList.add("is-hidden");
+    }
+    if (app) {
+      app.setAttribute("hidden", "");
+      app.classList.add("is-hidden");
+    }
+  }
+
+  function showLoginScreen() {
+    var reg = document.getElementById("screen-register");
+    var login = document.getElementById("screen-login");
+    var app = document.getElementById("screen-app");
+    
+    if (reg) {
+      reg.setAttribute("hidden", "");
+      reg.classList.add("is-hidden");
+    }
+    if (login) {
+      login.removeAttribute("hidden");
+      login.classList.remove("is-hidden");
+    }
+    if (app) {
+      app.setAttribute("hidden", "");
+      app.classList.add("is-hidden");
+    }
+  }
+
+  function copyTextToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        if (document.execCommand("copy")) resolve();
+        else reject(new Error("copy failed"));
+      } catch (err) {
+        reject(err);
+      }
+      document.body.removeChild(ta);
+    });
+  }
+
+  function showCopyToast() {
+    var toast = document.getElementById("copy-toast");
+    if (!toast) return;
+    toast.hidden = false;
+    window.setTimeout(function () {
+      toast.hidden = true;
+    }, 1800);
+  }
+
+  function updateProfileUI(user) {
+    var pid = document.getElementById("profile-id");
+    var pn = document.getElementById("profile-nickname");
+    var pc = document.getElementById("profile-referral-code");
+    var pl = document.getElementById("profile-referral-link");
+    var pi = document.getElementById("profile-inviter-code");
+    
+    if (pid) pid.textContent = user.id;
+    if (pn) pn.textContent = user.nickname;
+    if (pc) pc.textContent = user.referralCode;
+    if (pl) pl.textContent = user.referralLink;
+    if (pi) pi.textContent = user.inviterReferral || "—";
+    
+    balanceSkillPoints = user.balanceSkillPoints || 0;
+    balanceMtBanks = user.balanceMtBanks || 0;
+    syncBalancesToDom();
+  }
+
+  function showApp(user) {
+    hideRegisterShowApp();
+    updateProfileUI(user);
+    switchTab("profile");
+  }
+
+  function switchTab(tab) {
+    var panels = document.querySelectorAll(".panel");
+    for (var i = 0; i < panels.length; i += 1) {
+      var p = panels[i];
+      if (p.getAttribute("data-panel") === tab) {
+        p.classList.add("is-active");
+      } else {
+        p.classList.remove("is-active");
+      }
+    }
+
+    var tabs = document.querySelectorAll(".bottom-nav__tab");
+    for (var j = 0; j < tabs.length; j += 1) {
+      var btn = tabs[j];
+      if (btn.getAttribute("data-tab") === tab) {
+        btn.setAttribute("aria-current", "page");
+      } else {
+        btn.removeAttribute("aria-current");
+      }
+    }
+
+    if (tab === "profile") syncBalancesToDom();
+  }
+
+  // Регистрация нового пользователя
+  function registerUser(nicknameRaw, inviterCode) {
+    var nickname = nicknameRaw.trim();
+    var normalizedNickname = normalizeNickname(nickname);
+    
+    var users = loadAllUsers();
+    
+    // Проверка на существующий никнейм
+    for (var userId in users) {
+      if (users[userId].nicknameLower === normalizedNickname) {
+        return { success: false, error: "Этот ник уже занят. Выберите другой." };
+      }
+    }
+    
+    // Проверка длины никнейма
+    if (nickname.length < 2) {
+      return { success: false, error: "Никнейм слишком короткий." };
+    }
+    
+    // Создаём нового пользователя
+    var newUser = {
+      id: window._tempRegistration.id,
+      nickname: nickname,
+      nicknameLower: normalizedNickname,
+      referralCode: window._tempRegistration.referralCode,
+      referralLink: window._tempRegistration.referralLink,
+      inviterReferral: inviterCode || "",
+      balanceSkillPoints: 0,
+      balanceMtBanks: 0,
+      createdAt: Date.now()
+    };
+    
+    // Начисление бонуса за реферальный код
+    if (inviterCode && inviterCode.trim() !== "") {
+      var inviterFound = false;
+      for (var uid in users) {
+        if (users[uid].referralCode === inviterCode) {
+          inviterFound = true;
+          // Начисляем бонус новому пользователю
+          newUser.balanceSkillPoints = 1000;
+          newUser.balanceMtBanks = 1000;
+          break;
+        }
+      }
+      if (!inviterFound) {
+        return { success: false, error: "Неверный реферальный код." };
+      }
+    }
+    
+    // Сохраняем пользователя
+    users[newUser.id] = newUser;
+    saveAllUsers(users);
+    setCurrentUser(newUser.id);
+    
+    return { success: true, user: newUser };
+  }
+  
+  // Вход в аккаунт
+  function loginUser(id, nickname) {
+    var users = loadAllUsers();
+    var normalizedNickname = normalizeNickname(nickname);
+    
+    for (var userId in users) {
+      var user = users[userId];
+      if (user.id === id && user.nicknameLower === normalizedNickname) {
+        setCurrentUser(userId);
+        return { success: true, user: user };
+      }
+    }
+    
+    return { success: false, error: "Неверный ID или никнейм." };
+  }
+
+  // Проверка авторизации при загрузке страницы
+  function checkAuthAndRedirect() {
+    var currentUser = getCurrentUser();
+    if (currentUser) {
+      showApp(currentUser);
+    } else {
+      showRegisterScreen();
+    }
+  }
+
+  // ========== НАЧАЛО БЛОКА ИГРЫ ==========
+  
+  function getTodayKey() {
+    var today = new Date();
+    return today.toISOString().split('T')[0];
+  }
+  
+  function loadGameData() {
+    var currentUser = getCurrentUser();
+    if (!currentUser) return { clicks: 0, lastDate: getTodayKey() };
+    
+    var gameDataKey = "rr_game_data_" + currentUser.id;
+    try {
+      var raw = localStorage.getItem(gameDataKey);
+      if (!raw) return { clicks: 0, lastDate: getTodayKey() };
+      return JSON.parse(raw);
+    } catch (e) {
+      return { clicks: 0, lastDate: getTodayKey() };
+    }
+  }
+  
+  function saveGameData(data) {
+    var currentUser = getCurrentUser();
+    if (!currentUser) return;
+    
+    var gameDataKey = "rr_game_data_" + currentUser.id;
+    localStorage.setItem(gameDataKey, JSON.stringify(data));
+  }
+  
+  function updateGameUI() {
+    var currentUser = getCurrentUser();
+    if (!currentUser) return;
+    
+    // Синхронизируем глобальную переменную с актуальным балансом
+    balanceMtBanks = currentUser.balanceMtBanks || 0;
+    
+    var mtbSpan = document.getElementById("game-mtb-balance");
+    if (mtbSpan) mtbSpan.textContent = currentUser.balanceMtBanks || 0;
+    
+    // Также обновляем профиль, если он виден
+    var profileMtbSpan = document.getElementById("profile-balance-mtb");
+    if (profileMtbSpan) {
+      profileMtbSpan.textContent = String(balanceMtBanks).padStart(8, '0');
+    }
+    
+    var gameData = loadGameData();
+    var todayKey = getTodayKey();
+    
+    // Проверяем, не новый ли день
+    if (gameData.lastDate !== todayKey) {
+      gameData.clicks = 0;
+      gameData.lastDate = todayKey;
+      saveGameData(gameData);
+    }
+    
+    var clicksSpan = document.getElementById("game-today-clicks");
+    if (clicksSpan) clicksSpan.textContent = gameData.clicks || 0;
+    
+    var nextBonusSpan = document.getElementById("game-next-bonus");
+    if (nextBonusSpan) {
+      var clicksLeft = 10 - ((gameData.clicks || 0) % 10);
+      nextBonusSpan.textContent = clicksLeft;
+    }
+  }
+  
+  function showClickAnimation(x, y, value) {
+    var container = document.getElementById("game-animation-container");
+    if (!container) return;
+    
+    var animation = document.createElement("div");
+    animation.className = "click-animation";
+    animation.textContent = "+" + value;
+    animation.style.left = x + "px";
+    animation.style.top = y + "px";
+    container.appendChild(animation);
+    
+    setTimeout(function() {
+      if (animation.parentNode) {
+        animation.parentNode.removeChild(animation);
+      }
+    }, 1000);
+  }
+  
+  function addMtbanks(amount, clickEvent) {
+    var currentUser = getCurrentUser();
+    if (!currentUser) return false;
+    
+    // Обновляем баланс пользователя в объекте
+    currentUser.balanceMtBanks = (currentUser.balanceMtBanks || 0) + amount;
+    
+    // Сохраняем обновлённого пользователя в хранилище
+    var users = loadAllUsers();
+    users[currentUser.id] = currentUser;
+    saveAllUsers(users);
+    
+    // ВАЖНО: обновляем глобальные переменные балансов
+    balanceMtBanks = currentUser.balanceMtBanks;
+    
+    // Обновляем UI везде, где отображается баланс
+    syncBalancesToDom();  // Обновляет цифры в профиле
+    updateGameUI();       // Обновляет цифры в игре
+    
+    // Также обновляем отображение в профиле, если оно открыто
+    var profileMtbSpan = document.getElementById("profile-balance-mtb");
+    if (profileMtbSpan) {
+      profileMtbSpan.textContent = String(balanceMtBanks).padStart(8, '0');
+    }
+    
+    // Показываем анимацию если нужно
+    if (clickEvent && clickEvent.clientX) {
+      showClickAnimation(clickEvent.clientX, clickEvent.clientY, amount);
+    }
+    
+    return true;
+  }
+  
+  function handleTokenClick(event) {
+    var currentUser = getCurrentUser();
+    if (!currentUser) return;
+    
+    var gameData = loadGameData();
+    var todayKey = getTodayKey();
+    
+    // Сброс если новый день
+    if (gameData.lastDate !== todayKey) {
+      gameData.clicks = 0;
+      gameData.lastDate = todayKey;
+    }
+    
+    // Добавляем клик
+    gameData.clicks = (gameData.clicks || 0) + 1;
+    var currentClicks = gameData.clicks;
+    
+    // Начисляем 1 МТБанк за клик
+    addMtbanks(1, event);
+    
+    // Проверяем бонус каждые 10 кликов
+    var bonusAmount = 0;
+    if (currentClicks % 10 === 0) {
+      bonusAmount = 50;
+      addMtbanks(bonusAmount, null);
+      
+      // Показываем уведомление о бонусе
+      var toast = document.getElementById("buy-toast");
+      if (toast) {
+        var originalText = toast.textContent;
+        toast.textContent = "🎉 Бонус! +50 МТБанков за 10 кликов! 🎉";
+        toast.classList.add("is-visible");
+        setTimeout(function() {
+          toast.classList.remove("is-visible");
+          toast.textContent = originalText;
+        }, 2000);
+      }
+    }
+    
+    // Сохраняем данные игры
+    saveGameData(gameData);
+    
+    // Обновляем UI
+    updateGameUI();
+    
+    // Дополнительная анимация для бонуса
+    if (bonusAmount > 0 && event) {
+      setTimeout(function() {
+        showClickAnimation(event.clientX, event.clientY - 30, bonusAmount);
+      }, 100);
+    }
+    
+    // Небольшая вибрация если поддерживается
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  }
+  
+  function initGame() {
+  updateGameUI();
+  
+  var tokenBtn = document.getElementById("game-token-btn");
+  if (tokenBtn) {
+    tokenBtn.addEventListener("click", handleTokenClick);
+  }
+  
+  // ВСЁ! Никаких observer'ов для города здесь не нужно
+  // Город инициализируется сам через city-game.js
+}
+  
+  // ========== КОНЕЦ БЛОКА ИГРЫ ==========
+
+  function init() {
+    // Проверяем авторизацию при загрузке
+    checkAuthAndRedirect();
+    
+    // Регистрация
+    var form = document.getElementById("form-register");
+    var nicknameInput = document.getElementById("nickname");
+    var inviterInput = document.getElementById("inviter-referral");
+    var nicknameError = document.getElementById("nickname-error");
+    
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (nicknameError) {
+          nicknameError.hidden = true;
+          nicknameError.textContent = "";
+        }
+        
+        var nicknameRaw = nicknameInput ? nicknameInput.value : "";
+        var inviterCode = inviterInput ? inviterInput.value.trim() : "";
+        
+        var result = registerUser(nicknameRaw, inviterCode);
+        
+        if (!result.success) {
+          if (nicknameError) {
+            nicknameError.textContent = result.error;
+            nicknameError.hidden = false;
+          }
+          return;
+        }
+        
+        showApp(result.user);
+      });
+    }
+    
+    // Вход в аккаунт
+    var loginForm = document.getElementById("form-login");
+    var loginIdInput = document.getElementById("login-id");
+    var loginNicknameInput = document.getElementById("login-nickname");
+    var loginError = document.getElementById("login-error");
+    
+    if (loginForm) {
+      loginForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (loginError) {
+          loginError.hidden = true;
+          loginError.textContent = "";
+        }
+        
+        var id = loginIdInput ? loginIdInput.value.trim() : "";
+        var nickname = loginNicknameInput ? loginNicknameInput.value.trim() : "";
+        
+        if (!id || !nickname) {
+          if (loginError) {
+            loginError.textContent = "Заполните оба поля.";
+            loginError.hidden = false;
+          }
+          return;
+        }
+        
+        var result = loginUser(id, nickname);
+        
+        if (!result.success) {
+          if (loginError) {
+            loginError.textContent = result.error;
+            loginError.hidden = false;
+          }
+          return;
+        }
+        
+        showApp(result.user);
+      });
+    }
+    
+    // Кнопка выхода
+    var logoutBtn = document.getElementById("btn-logout");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", function () {
+        logout();
+      });
+    }
+    
+    // Копирование реферальной ссылки
+    var copyBtn = document.getElementById("btn-copy-referral-link");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", function () {
+        var span = document.getElementById("profile-referral-link");
+        var url = span ? span.textContent.trim() : "";
+        if (!url || url === "—") return;
+        copyTextToClipboard(url).then(
+          function () {
+            showCopyToast();
+          },
+          function () {
+            window.prompt("Скопируйте ссылку:", url);
+          }
+        );
+      });
+    }
+    
+    // Навигация
+    var nav = document.getElementById("bottom-nav");
+    if (nav) {
+      nav.addEventListener("click", function (e) {
+        var target = e.target;
+        if (!target || !target.closest) return;
+        var btn = target.closest(".bottom-nav__tab");
+        if (!btn || !nav.contains(btn)) return;
+        var tab = btn.getAttribute("data-tab");
+        if (tab) switchTab(tab);
+      });
+    }
+    
+    // Переключение между экранами регистрации и входа
+    var showLoginLink = document.getElementById("show-login");
+    var showRegisterLink = document.getElementById("show-register");
+    
+    if (showLoginLink) {
+      showLoginLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        showLoginScreen();
+      });
+    }
+    
+    if (showRegisterLink) {
+      showRegisterLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        showRegisterScreen();
+      });
+    }
+    
+    // Инициализация игры
+    initGame();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+=== js/city-game.js ===
+// 🏙️ MtBank City — ФИНАЛЬНАЯ РАБОЧАЯ ВЕРСИЯ
+console.log('🚀 city-game.js загружается...');
+
+// ========== КОНФИГУРАЦИЯ ВСЕХ 15 ЗДАНИЙ ==========
+const DEFS = [
+  // КАТЕГОРИЯ 1 — СТАРТОВЫЕ
+  {id:'cafe', name:'Кофейня', cat:'⭐ Старт', inc:6, uc:80, maxLv:5, bc:50, bg:'#fff4e0', sprite:'cafe.png'},
+  {id:'flower', name:'Цветочный', cat:'⭐ Старт', inc:5, uc:70, maxLv:5, bc:45, bg:'#ffe0f0', sprite:'flower.png'},
+  {id:'minimarket', name:'Мини-маркет', cat:'⭐ Старт', inc:7, uc:90, maxLv:5, bc:60, bg:'#e0ffe0', sprite:'minimarket.png'},
+  {id:'foodtruck', name:'Фудтрак', cat:'⭐ Старт', inc:8, uc:85, maxLv:5, bc:55, bg:'#ffe8d0', sprite:'foodtruck.png'},
+  {id:'icecream', name:'Мороженое', cat:'⭐ Старт', inc:6, uc:75, maxLv:5, bc:40, bg:'#e0f0ff', sprite:'icecream.png'},
+  
+  // КАТЕГОРИЯ 2 — СРЕДНИЕ
+  {id:'restaurant', name:'Ресторан', cat:'🏢 Средний', inc:18, uc:200, maxLv:5, bc:180, bg:'#f0e0e0', sprite:'restaurant.png'},
+  {id:'store', name:'Магазин', cat:'🏢 Средний', inc:15, uc:170, maxLv:5, bc:150, bg:'#e0e0ff', sprite:'store.png'},
+  {id:'autoservice', name:'Автосервис', cat:'🏢 Средний', inc:20, uc:220, maxLv:5, bc:200, bg:'#d0d0d0', sprite:'autoservice.png'},
+  {id:'itoffice', name:'ИТ-офис', cat:'🏢 Средний', inc:22, uc:250, maxLv:5, bc:220, bg:'#c0e0ff', sprite:'itoffice.png'},
+  {id:'gasstation', name:'Заправка', cat:'🏢 Средний', inc:17, uc:190, maxLv:5, bc:170, bg:'#ffe0c0', sprite:'gasstation.png'},
+  
+  // КАТЕГОРИЯ 3 — ЭЛИТНЫЕ
+  {id:'business', name:'Бизнес-центр', cat:'🏦 Элит', inc:45, uc:400, maxLv:5, bc:500, bg:'#e0eeff', sprite:'business-center.png'},
+  {id:'cinema', name:'Кинотеатр', cat:'🏦 Элит', inc:50, uc:450, maxLv:5, bc:550, bg:'#e0d0ff', sprite:'cinema.png'},
+  {id:'construction', name:'Стройка', cat:'🏦 Элит', inc:55, uc:500, maxLv:5, bc:600, bg:'#ffe8a0', sprite:'construction.png'},
+  {id:'warehouse', name:'Склад', cat:'🏦 Элит', inc:40, uc:380, maxLv:5, bc:450, bg:'#d0c0a0', sprite:'warehouse.png'},
+  {id:'mall', name:'ТЦ', cat:'🏦 Элит', inc:60, uc:550, maxLv:5, bc:700, bg:'#ffd0e0', sprite:'mall.png'}
+];
+
+const TOWNHALL_DEF = {id:'bank', name:'🏦 БАНК (Ратуша)', cat:'👑 Ратуша', inc:30, uc:500, maxLv:5, bc:0, bg:'#f5e6a0', sprite:'bank.png'};
+
+const DM = {};
+DEFS.forEach(d => DM[d.id] = d);
+DM['bank'] = TOWNHALL_DEF;
+
+const CATEGORIES = {
+  starter: DEFS.slice(0, 5),
+  medium: DEFS.slice(5, 10),
+  elite: DEFS.slice(10, 15)
+};
+
+const SPRITE_PATH = 'assets/sprites/buildings/';
+const GRID = 5;
+
+let cityCoins = 2000, cityLevel = 1, selectedKey = null, pendingTile = null;
+const buildings = {};
+let isoContainer, coinDisplay, levelDisplay, tileElements = {}, popupOverlay, buildOverlay, notifEl, notifyTimeout;
+let currentCategory = 'starter';
+
+let cameraZoom = 1.3;
+let cameraX = 0, cameraY = 0;
+let isDragging = false, hasMoved = false;
+let dragStartX = 0, dragStartY = 0;
+let dragCameraStartX = 0, dragCameraStartY = 0;
+let initialPinchDistance = 0, initialZoom = 1.3;
+
+// ========== ФУНКЦИИ ДЛЯ PNG СПРАЙТОВ ==========
+function getBldSpriteHTML(id, level) {
+  const def = DM[id];
+  if (!def) return '';
+  
+  const size = 55;
+  
+  return `
+    <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:${size}px;height:${size}px;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;filter:drop-shadow(0 6px 4px rgba(0,0,0,0.35));">
+      <img src="${SPRITE_PATH}${def.sprite}" alt="${def.name}" style="width:100%;height:100%;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div style="display:none;width:100%;height:100%;background:${def.bg};border-radius:8px;align-items:center;justify-content:center;font-size:24px;font-weight:bold;color:#333;border:2px dashed #999;">${def.name.charAt(0)}</div>
+      <div style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);color:#fff;padding:2px 6px;border-radius:12px;font-size:9px;font-weight:bold;white-space:nowrap;">Lv.${level}</div>
+    </div>
+  `;
+}
+
+function getPreviewSpriteHTML(id) {
+  const def = DM[id];
+  if (!def) return '';
+  
+  return `
+    <div style="width:65px;height:65px;display:flex;align-items:center;justify-content:center;">
+      <img src="${SPRITE_PATH}${def.sprite}" alt="${def.name}" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 4px rgba(0,0,0,0.3));" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div style="display:none;width:100%;height:100%;background:${def.bg};border-radius:12px;align-items:center;justify-content:center;font-size:32px;font-weight:bold;color:#555;">${def.name.charAt(0)}</div>
+    </div>
+  `;
+}
+
+// ========== ПЛИТКА ==========
+function tileBg(r, c) {
+  const isTownhall = (r === 2 && c === 2);
+  const sh = isTownhall ? '#f5d060' : ((r + c) % 2 === 0 ? '#72c85a' : '#68ba50');
+  const lsh = isTownhall ? '#d4a020' : '#50a038';
+  const rsh = isTownhall ? '#b08010' : '#427828';
+  const strokeColor = isTownhall ? '#ffd700' : '#58a840';
+  
+  return `
+    <svg viewBox="0 0 72 64" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;">
+      <polygon points="36,1 71,19 36,37 1,19" fill="${sh}" stroke="${strokeColor}" stroke-width="${isTownhall ? '2.5' : '1.5'}"/>
+      <polygon points="1,19 36,37 36,52 1,34" fill="${lsh}"/>
+      <polygon points="36,37 71,19 71,34 36,52" fill="${rsh}"/>
+    </svg>
+  `;
+}
+
+function makeTile(r, c) {
+  const key = `${r},${c}`;
+  const b = buildings[key];
+  
+  const bldHTML = b ? getBldSpriteHTML(b.id, b.lv) : `
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);width:40px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(255,255,255,.2);border:2px dashed rgba(255,255,255,.6);font-size:16px;color:rgba(255,255,255,.9);pointer-events:none;">+</div>
+  `;
+  
+  const dot = b ? `<div class="city-dot" id="dot-${key}"></div>` : '';
+  
+  return tileBg(r, c) + dot + bldHTML;
+}
+
+// ========== ОСНОВНЫЕ ФУНКЦИИ ==========
+function loadBuildings() {
+  const saved = localStorage.getItem('mtbank_city_buildings_v7');
+  if (saved) {
+    Object.assign(buildings, JSON.parse(saved));
+  } else {
+    buildings['2,2'] = {id:'bank', lv:1, acc:0, tick:Date.now()};
+  }
+  
+  const user = window.getCurrentUser?.();
+  if (user) { cityCoins = user.balanceMtBanks || 2000; updateCoins(); }
+}
+
+function saveBuildings() { localStorage.setItem('mtbank_city_buildings_v7', JSON.stringify(buildings)); }
+
+function renderGrid() {
+  if (!isoContainer) return;
+  
+  const TW = 90, TH = 48;
+  const CW = GRID * TW, CH = GRID * (TH / 2) + TH + 80;
+  
+  isoContainer.style.width = CW + 'px';
+  isoContainer.style.height = CH + 'px';
+  isoContainer.style.transformOrigin = 'center center';
+  isoContainer.innerHTML = '';
+  tileElements = {};
+  
+  for (let r = 0; r < GRID; r++) {
+    for (let c = 0; c < GRID; c++) {
+      const sx = (c - r) * (TW / 2) + CW / 2 - TW / 2;
+      const sy = (c + r) * (TH / 2) + 15;
+      const key = `${r},${c}`;
+      
+      const div = document.createElement('div');
+      div.className = 'city-tile';
+      div.style.cssText = `left:${sx}px;top:${sy}px;width:72px;height:64px;`;
+      div.style.pointerEvents = 'auto';
+      div.style.zIndex = '10';
+      div.innerHTML = makeTile(r, c);
+      div.onclick = () => onTileClick(r, c);
+      
+      isoContainer.appendChild(div);
+      tileElements[key] = div;
+    }
+  }
+  
+  updateCameraTransform();
+  updateDots();
+}
+
+function updateCameraTransform() {
+  if (isoContainer) {
+    isoContainer.style.transform = `translate(${cameraX}px, ${cameraY}px) scale(${cameraZoom})`;
+  }
+}
+
+function resetCamera() {
+  cameraX = 0;
+  cameraY = 0;
+  cameraZoom = 1.3;
+  updateCameraTransform();
+}
+
+function updateDots() {
+  Object.entries(buildings).forEach(([k, b]) => {
+    const d = document.getElementById('dot-' + k);
+    if (d) d.style.display = b.acc >= 1 ? 'block' : 'none';
+  });
+}
+
+function tickBuildings() {
+  const now = Date.now();
+  Object.entries(buildings).forEach(([k, b]) => {
+    const d = DM[b.id];
+    if (d) b.acc += d.inc * b.lv * ((now - b.tick) / 3600000);
+    b.tick = now;
+  });
+  saveBuildings();
+}
+
+function refreshTile(key) {
+  const [r, c] = key.split(',').map(Number);
+  if (tileElements[key]) tileElements[key].innerHTML = makeTile(r, c);
+  updateDots();
+}
+
+function onTileClick(r, c) {
+  if (hasMoved) return;
+  const key = `${r},${c}`;
+  buildings[key] ? openPopup(key) : (pendingTile = key, openBuildMenu());
+}
+
+function openPopup(key) {
+  selectedKey = key;
+  const b = buildings[key], d = DM[b.id];
+  
+  document.getElementById('popup-name').textContent = d.name + ' Lv' + b.lv;
+  document.getElementById('popup-type').textContent = d.cat;
+  document.getElementById('popup-income').textContent = (d.inc * b.lv) + ' MtB/ч';
+  document.getElementById('popup-acc').textContent = Math.floor(b.acc) + ' MtB';
+  document.getElementById('popup-level').textContent = b.lv;
+  document.getElementById('popup-upcost').textContent = b.lv >= d.maxLv ? 'МАКС' : d.uc * b.lv + ' MtB';
+  document.getElementById('popup-progress').style.width = (b.lv / d.maxLv * 100) + '%';
+  document.getElementById('popup-progress-text').textContent = `Уровень ${b.lv} / ${d.maxLv}`;
+  
+  const preview = document.getElementById('popup-preview');
+  preview.style.background = d.bg;
+  preview.innerHTML = getPreviewSpriteHTML(b.id);
+  
+  document.getElementById('popup-collect').disabled = b.acc < 1;
+  document.getElementById('popup-upgrade').disabled = b.lv >= d.maxLv || cityCoins < d.uc * b.lv;
+  
+  popupOverlay.classList.add('open');
+}
+
+function openBuildMenu() {
+  const grid = document.getElementById('build-grid');
+  const categoryTabs = document.getElementById('build-categories');
+  
+  const renderCategory = (cat) => {
+    currentCategory = cat;
+    grid.innerHTML = '';
+    
+    document.querySelectorAll('.category-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.cat === cat);
+    });
+    
+    const buildingsList = CATEGORIES[cat] || DEFS;
+    buildingsList.forEach(d => {
+      const div = document.createElement('div');
+      div.className = 'build-item';
+      div.innerHTML = `
+        <div style="width:58px;height:65px;">${getPreviewSpriteHTML(d.id)}</div>
+        <div class="build-item-name">${d.name}</div>
+        <div class="build-item-cost">🪙${d.bc}</div>
+      `;
+      
+      div.onclick = () => {
+        if (!pendingTile) { notify('Нажми на пустую клетку'); closeBuildMenu(); return; }
+        if (buildings[pendingTile]) { notify('Клетка занята!'); return; }
+        if (cityCoins < d.bc) { notify('Недостаточно MtB!'); return; }
+        
+        cityCoins -= d.bc;
+        buildings[pendingTile] = {id: d.id, lv: 1, acc: 0, tick: Date.now()};
+        refreshTile(pendingTile); updateCoins(); saveBuildings(); syncBalance(); burst();
+        notify(`${d.name} построена! 🏗`);
+        pendingTile = null; closeBuildMenu(); updateCityLevel();
+      };
+      
+      grid.appendChild(div);
+    });
+  };
+  
+  if (!categoryTabs) {
+    const tabsDiv = document.createElement('div');
+    tabsDiv.id = 'build-categories';
+    tabsDiv.style.cssText = 'display:flex;gap:5px;margin-bottom:12px';
+    tabsDiv.innerHTML = `
+      <button class="category-tab active" data-cat="starter" style="flex:1;padding:8px;border:none;border-radius:20px;background:#7dbe9e;color:#1a3a2e;font-weight:bold;cursor:pointer;box-shadow:0 3px 0 #4a7a62;">⭐ Старт</button>
+      <button class="category-tab" data-cat="medium" style="flex:1;padding:8px;border:none;border-radius:20px;background:#b8a07c;color:#1a3a2e;font-weight:bold;cursor:pointer;box-shadow:0 3px 0 #8a7050;">🏢 Средние</button>
+      <button class="category-tab" data-cat="elite" style="flex:1;padding:8px;border:none;border-radius:20px;background:#d4af37;color:#1a3a2e;font-weight:bold;cursor:pointer;box-shadow:0 3px 0 #a08020;">🏦 Элит</button>
+    `;
+    const menuHeader = document.querySelector('.build-menu div');
+    menuHeader.parentNode.insertBefore(tabsDiv, grid);
+    
+    tabsDiv.querySelectorAll('.category-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        e.stopPropagation();
+        renderCategory(tab.dataset.cat);
+      });
+    });
+  }
+  
+  renderCategory('starter');
+  buildOverlay.classList.add('open');
+}
+
+function closeBuildMenu() { buildOverlay.classList.remove('open'); pendingTile = null; }
+function closePopup() { popupOverlay.classList.remove('open'); selectedKey = null; }
+
+function collectFromPopup() {
+  if (!selectedKey) return;
+  const b = buildings[selectedKey], amt = Math.floor(b.acc);
+  if (amt < 1) return;
+  
+  b.acc -= amt; cityCoins += amt; updateCoins(); syncBalance(); floatCoin(amt);
+  notify(`+${amt} MtB собрано! 💰`);
+  openPopup(selectedKey); updateCityLevel(); saveBuildings();
+}
+
+function upgradeFromPopup() {
+  if (!selectedKey) return;
+  const b = buildings[selectedKey], d = DM[b.id];
+  if (b.lv >= d.maxLv) return;
+  const cost = d.uc * b.lv;
+  if (cityCoins < cost) { notify('Недостаточно MtB!'); return; }
+  
+  cityCoins -= cost; b.lv++; updateCoins(); syncBalance(); refreshTile(selectedKey); burst();
+  notify(`${d.name} улучшен до Lv${b.lv}! ⬆`);
+  openPopup(selectedKey); saveBuildings();
+}
+
+function collectAll() {
+  let tot = 0;
+  Object.entries(buildings).forEach(([k, b]) => { const a = Math.floor(b.acc); if (a > 0) { b.acc -= a; tot += a; } });
+  if (tot > 0) { cityCoins += tot; updateCoins(); syncBalance(); floatCoin(tot); notify(`Собрано +${tot} MtB! 💰`); updateCityLevel(); saveBuildings(); }
+  else notify('Пока нечего собирать...');
+}
+
+function showStats() {
+  let inc = 0;
+  Object.values(buildings).forEach(b => { const d = DM[b.id]; if (d) inc += d.inc * b.lv; });
+  notify(`Доход: ${inc} MtB/ч | Зданий: ${Object.keys(buildings).length}`);
+}
+
+function updateCityLevel() {
+  const n = Math.max(1, Math.floor(Object.keys(buildings).length / 3) + 1);
+  if (n > cityLevel) { cityLevel = n; levelDisplay.textContent = cityLevel; notify('Город вырос! Lv' + cityLevel + ' 🌟'); burst(); }
+}
+
+function updateCoins() { if (coinDisplay) coinDisplay.textContent = cityCoins.toLocaleString(); }
+
+function syncBalance() {
+  const user = window.getCurrentUser?.();
+  if (user) { user.balanceMtBanks = cityCoins; const users = window.loadAllUsers?.(); if (users) { users[user.id] = user; window.saveAllUsers?.(users); } window.balanceMtBanks = cityCoins; window.syncBalancesToDom?.(); }
+}
+
+function notify(msg) {
+  if (!notifEl) return;
+  notifEl.textContent = msg; notifEl.classList.add('show');
+  clearTimeout(notifyTimeout); notifyTimeout = setTimeout(() => notifEl.classList.remove('show'), 2400);
+}
+
+function floatCoin(amt) {
+  const el = document.createElement('div'); el.className = 'city-float-coin'; el.textContent = '+' + amt + ' MtB';
+  el.style.cssText = `left:${window.innerWidth/2-30}px;top:${window.innerHeight*.44}px`;
+  document.body.appendChild(el); setTimeout(() => el.remove(), 960);
+}
+
+function burst() {
+  ['⭐','✨','🌟'].forEach((s, i) => {
+    const el = document.createElement('div'); el.className = 'city-sparkle'; el.textContent = s;
+    el.style.cssText = `left:${window.innerWidth/2-16+i*20}px;top:${window.innerHeight*.28}px`;
+    document.body.appendChild(el); setTimeout(() => el.remove(), 680);
+  });
+}
+
+function setupCameraControls() {
+  const gameArea = document.querySelector('.city-game-area');
+  if (!gameArea) return;
+  
+  cameraZoom = 1.3;
+  
+  // Зум колёсиком
+  gameArea.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    cameraZoom = Math.min(2.2, Math.max(0.9, cameraZoom + (e.deltaY > 0 ? -0.05 : 0.05)));
+    updateCameraTransform();
+  }, { passive: false });
+  
+  // Перемещение ТОЛЬКО при зажатии на ПУСТОМ месте
+  gameArea.addEventListener('mousedown', (e) => {
+    // Не перетаскиваем если кликнули по плитке
+    if (e.target.closest('.city-tile')) return;
+    
+    isDragging = true;
+    dragStartX = e.clientX; 
+    dragStartY = e.clientY;
+    dragCameraStartX = cameraX; 
+    dragCameraStartY = cameraY;
+    gameArea.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+  
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    cameraX = dragCameraStartX + (e.clientX - dragStartX);
+    cameraY = dragCameraStartY + (e.clientY - dragStartY);
+    updateCameraTransform();
+  });
+  
+  window.addEventListener('mouseup', () => { 
+    isDragging = false; 
+    if (gameArea) gameArea.style.cursor = 'default';
+  });
+  
+  // Touch для телефона — ТОЛЬКО на пустом месте
+  gameArea.addEventListener('touchstart', (e) => {
+    // Если кликнули по плитке — не перетаскиваем
+    if (e.target.closest('.city-tile')) return;
+    
+    if (e.touches.length === 1) {
+      isDragging = true;
+      dragStartX = e.touches[0].clientX; 
+      dragStartY = e.touches[0].clientY;
+      dragCameraStartX = cameraX; 
+      dragCameraStartY = cameraY;
+    } else if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      initialPinchDistance = Math.sqrt(dx*dx + dy*dy);
+      initialZoom = cameraZoom;
+    }
+  }, { passive: false });
+  
+  gameArea.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 1 && isDragging) {
+      e.preventDefault();
+      cameraX = dragCameraStartX + (e.touches[0].clientX - dragStartX);
+      cameraY = dragCameraStartY + (e.touches[0].clientY - dragStartY);
+      updateCameraTransform();
+    } else if (e.touches.length === 2) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const distance = Math.sqrt(dx*dx + dy*dy);
+      if (initialPinchDistance > 0) {
+        cameraZoom = Math.min(2.2, Math.max(0.9, initialZoom * (distance / initialPinchDistance)));
+        updateCameraTransform();
+      }
+    }
+  }, { passive: false });
+  
+  gameArea.addEventListener('touchend', () => { 
+    isDragging = false; 
+    initialPinchDistance = 0;
+  });
+  
+  gameArea.style.cursor = 'default';
+}
+
+function bindEvents() {
+  document.getElementById('city-reset-camera')?.addEventListener('click', resetCamera);
+  document.getElementById('city-build-btn')?.addEventListener('click', () => { pendingTile = null; openBuildMenu(); });
+  document.getElementById('city-collect-all-btn')?.addEventListener('click', collectAll);
+  document.getElementById('popup-close-btn')?.addEventListener('click', closePopup);
+  document.getElementById('popup-collect')?.addEventListener('click', collectFromPopup);
+  document.getElementById('popup-upgrade')?.addEventListener('click', upgradeFromPopup);
+  popupOverlay?.addEventListener('click', e => { if (e.target === popupOverlay) closePopup(); });
+  buildOverlay?.addEventListener('click', e => { if (e.target === buildOverlay) closeBuildMenu(); });
+}
+
+// ========== ИНИЦИАЛИЗАЦИЯ ==========
+window.initCity = function() {
+  const panel = document.getElementById('panel-game');
+  if (!panel) return;
+  
+  panel.innerHTML = `
+    <div class="city-game-wrap" style="height:100%;display:flex;flex-direction:column;">
+      <div class="city-hud">
+        <div class="city-coins"><div class="coin-icon">M</div><span id="city-coin-display">2000</span></div>
+        <div class="city-title">🏙 MtBank City</div>
+        <div class="city-level">Lv.<span id="city-level-display">1</span></div>
+      </div>
+      <div class="city-game-area" style="flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <div id="city-iso" style="position:relative;"></div>
+      </div>
+      <div class="city-bar">
+        <button class="city-bar-btn" id="city-reset-camera"><span>🎯</span><span>Центр</span></button>
+        <button class="city-bar-btn primary" id="city-build-btn"><span>🏗</span><span>Строить</span></button>
+        <button class="city-bar-btn" id="city-collect-all-btn"><span>💰</span><span>Собрать</span></button>
+      </div>
+    </div>
+    <div class="city-popup-overlay" id="city-popup"><div class="city-popup"><div class="popup-header"><div><div class="popup-name" id="popup-name"></div><div class="popup-type" id="popup-type"></div></div><button class="popup-close" id="popup-close-btn">✕</button></div><div class="popup-preview" id="popup-preview"></div><div class="popup-progress-bar"><div class="popup-progress" id="popup-progress"></div></div><div class="popup-progress-text" id="popup-progress-text"></div><div class="popup-stats"><div class="stat-card"><div class="stat-label">Доход/час</div><div class="stat-value gold" id="popup-income"></div></div><div class="stat-card"><div class="stat-label">Накоплено</div><div class="stat-value gold" id="popup-acc"></div></div><div class="stat-card"><div class="stat-label">Уровень</div><div class="stat-value" id="popup-level"></div></div><div class="stat-card"><div class="stat-label">Апгрейд</div><div class="stat-value gold" id="popup-upcost"></div></div></div><div class="popup-buttons"><button class="btn-collect" id="popup-collect">💰 Забрать</button><button class="btn-upgrade" id="popup-upgrade">⬆ Улучшить</button></div></div></div>
+    <div class="build-overlay" id="build-overlay"><div class="build-menu"><div style="display:flex;justify-content:space-between;margin-bottom:14px"><div>Выберите здание</div><button id="build-close-btn">✕</button></div><div class="build-grid" id="build-grid"></div></div></div>
+    <div class="city-notif" id="city-notif"></div>
+  `;
+  
+  coinDisplay = document.getElementById('city-coin-display');
+  levelDisplay = document.getElementById('city-level-display');
+  isoContainer = document.getElementById('city-iso');
+  popupOverlay = document.getElementById('city-popup');
+  buildOverlay = document.getElementById('build-overlay');
+  notifEl = document.getElementById('city-notif');
+  
+  loadBuildings();
+  renderGrid();
+  bindEvents();
+  setupCameraControls();
+  updateCoins();
+  
+  document.getElementById('build-close-btn')?.addEventListener('click', closeBuildMenu);
+  
+  setInterval(() => { tickBuildings(); updateDots(); }, 3000);
+};
+
+setTimeout(() => { if (document.getElementById('panel-game')?.classList.contains('is-active')) window.initCity(); }, 200);
+
+const observer = new MutationObserver(() => {
+  if (document.getElementById('panel-game')?.classList.contains('is-active')) window.initCity();
+});
+observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+=== styles.css ===
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-page: #f2f2f2;
+  --bg-card: #ffffff;
+  --text-dark: #2a2a2a;
+  --text-muted: #8a8a8a;
+  --border-input: #d8d8d8;
+  --shadow-card: 0 8px 28px rgba(0, 0, 0, 0.06);
+  --nav-border: #e8e8e8;
+  --accent-active: #1a1a1a;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+[hidden],
+.is-hidden {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: var(--font);
+  background: var(--bg-page);
+  color: var(--text-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+.screen {
+  min-height: 100vh;
+}
+
+.screen--center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.screen--app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+  width: 100%;
+  max-width: 420px;
+}
+
+.card--form {
+  padding: 48px 44px;
+}
+
+.card__title {
+  margin: 0 0 32px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dark);
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field__label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.field__input {
+  width: 100%;
+  padding: 14px 16px;
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--text-dark);
+  background: #fff;
+  border: 1px solid var(--border-input);
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.field__input:focus {
+  border-color: #9a9a9a;
+}
+
+.field__input::placeholder {
+  color: #bdbdbd;
+}
+
+.field__readonly {
+  margin: 0;
+  padding: 14px 16px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  background: #fafafa;
+  border: 1px solid var(--border-input);
+  border-radius: 4px;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.field__hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #c62828;
+}
+
+.btn {
+  margin-top: 8px;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.btn--pill {
+  align-self: center;
+  padding: 14px 48px;
+  border-radius: 999px;
+  background: var(--accent-active);
+  color: #fff;
+  min-width: 200px;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.btn--pill:hover {
+  opacity: 0.92;
+}
+
+.btn--pill:active {
+  transform: scale(0.98);
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 24px 16px 16px;
+}
+
+.panel {
+  display: none;
+  width: 100%;
+  max-width: 480px;
+}
+
+.panel.is-active {
+  display: block;
+}
+
+.card--panel {
+  padding: 28px 24px 32px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.panel__title {
+  margin: 0 0 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dark);
+}
+
+.panel__empty {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Профиль */
+.profile-page {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-balances {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.balance-card {
+  padding: 20px 14px 22px;
+  text-align: center;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  min-height: 112px;
+  box-shadow: 0 10px 28px rgba(75, 0, 130, 0.22);
+}
+
+.profile-balances .balance-card:nth-child(1) {
+  background: linear-gradient(145deg, #007bff 0%, #6a00b8 48%, #e10098 100%);
+}
+
+.profile-balances .balance-card:nth-child(2) {
+  background: linear-gradient(168deg, #e10098 0%, #5c0099 42%, #300060 100%);
+}
+
+.balance-card__label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.balance-card__value {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: #ffffff;
+}
+
+.balance-card__digits {
+  line-height: 1;
+}
+
+/* Магазин */
+.shop-page {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  padding: 2px;
+}
+
+.shop-item {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  outline: none;
+}
+
+a.shop-item {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.shop-item__inner {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.24s ease, box-shadow 0.24s ease;
+}
+
+.shop-item:hover .shop-item__inner {
+  transform: scale(1.06);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.14);
+}
+
+.shop-item__visual {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14%;
+}
+
+.shop-item__visual--apple {
+  background: linear-gradient(160deg, #fff8e7 0%, #f5e6c8 100%);
+}
+
+.shop-item__visual--spa {
+  background: linear-gradient(160deg, #f7f2ed 0%, #e8ddd4 100%);
+}
+
+.shop-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.shop-item__hover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 12px 12px 14px;
+  background: linear-gradient(to top, rgba(20, 20, 20, 0.88) 0%, rgba(20, 20, 20, 0.35) 52%, transparent 72%);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.shop-item:hover .shop-item__hover {
+  opacity: 1;
+}
+
+.shop-item__name {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.shop-item__desc {
+  margin: 0;
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* Навигация */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  gap: 4px;
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: var(--bg-card);
+  border-top: 1px solid var(--nav-border);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+  z-index: 10;
+}
+
+.bottom-nav__tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: var(--text-muted);
+  border-radius: 8px;
+}
+
+.bottom-nav__tab[aria-current="page"] {
+  color: var(--accent-active);
+  font-weight: 600;
+}
+
+/* Вход/регистрация */
+.auth-switch {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.auth-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn--logout {
+  width: 100%;
+  margin-top: 16px;
+  background: linear-gradient(145deg, #dc3545 0%, #c82333 100%);
+}
+
+/* ФИКС ВЫСОТЫ ДЛЯ ВСЕГО ПРИЛОЖЕНИЯ */
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+#screen-app {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.app-main {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.panel {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+.panel.is-active {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+.bottom-nav {
+  flex-shrink: 0 !important;
+  position: relative !important;
+}
+=== iso-styles.css ===
+#panel-game {
+  padding: 0 !important;
+  height: 100% !important;
+}
+
+.city-game-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #4ec9e8 0%, #8ee8f7 52%, #25b0a0 52%);
+  position: relative;
+}
+
+.city-hud {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(0,0,0,.15);
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+
+.city-coins {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.95);
+  border-radius: 30px;
+  padding: 5px 14px;
+}
+
+.coin-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(140deg, #ffdc1e, #f0a000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: #7a4500;
+}
+
+.city-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.city-level {
+  background: rgba(255,255,255,.25);
+  border-radius: 20px;
+  padding: 5px 12px;
+  color: #fff;
+}
+
+.city-game-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+#city-iso {
+  position: relative;
+  pointer-events: none;
+}
+
+.city-tile {
+  position: absolute;
+  cursor: pointer;
+  pointer-events: auto !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.city-tile * {
+  pointer-events: none;
+}
+
+.city-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  background: #22c55e;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  display: none;
+  pointer-events: none;
+}
+
+.city-bar {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.98);
+  border-radius: 20px 20px 0 0;
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+
+.city-bar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f0f9f4;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #c0dcc8;
+  pointer-events: auto;
+}
+
+.city-bar-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #c0dcc8;
+}
+
+.city-bar-btn.primary {
+  background: #34d399;
+  flex: 1;
+}
+
+.city-popup-overlay, .build-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+
+.city-popup-overlay.open, .build-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.city-popup, .build-menu {
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-width: 450px;
+  padding: 20px;
+  transform: translateY(100%);
+  transition: transform .25s;
+  max-height: 80vh;
+  overflow-y: auto;
+  pointer-events: auto;
+}
+
+.city-popup-overlay.open .city-popup,
+.build-overlay.open .build-menu {
+  transform: translateY(0);
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.popup-close, #build-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f2f2f2;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.build-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.build-item {
+  background: #f7faf8;
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.build-item:active {
+  background: #e8f7ef;
+  transform: scale(0.98);
+}
+
+#build-categories {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.category-tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.popup-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.stat-card {
+  background: #f7faf8;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.popup-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-collect, .btn-upgrade {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.btn-collect {
+  background: #ffd830;
+  color: #7a4500;
+}
+
+.btn-upgrade {
+  background: #34d399;
+  color: #022c1a;
+}
+
+.btn-collect:active, .btn-upgrade:active {
+  transform: translateY(2px);
+}
+
+.btn-collect:disabled, .btn-upgrade:disabled {
+  opacity: 0.5;
+}
+
+.city-notif {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #152a20;
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 40px;
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity .25s;
+  pointer-events: none;
+}
+
+.city-notif.show {
+  opacity: 1;
+}
+
+.city-float-coin, .city-sparkle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1500;
+}
+
+.city-bubble {
+  display: none !important;
+}
+
+/* Фикс для кликов */
+button, .city-bar-btn, .build-item, .category-tab, .popup-close, #build-close-btn, .btn-collect, .btn-upgrade {
+  pointer-events: auto !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.city-tile {
+  pointer-events: auto !important;
+  z-index: 5;
+}
+
+.city-tile:hover {
+  filter: brightness(1.1);
+}
