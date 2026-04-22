@@ -2869,3 +2869,158 @@ button:active, .city-bar-btn:active, .city-control-btn:active, .build-option:act
   font-weight: 700;
   color: #FFD700;
 }
+/* Полоска прогресса накопления дохода на тайле */
+.city-tile .pending-progress {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  right: 2px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  height: 3px;
+  overflow: hidden;
+  z-index: 15;
+}
+
+.city-tile .pending-progress-fill {
+  height: 100%;
+  background: #FFD700;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+/* Модальное окно МТБанка - обновлённое */
+.mtbank-modal__icon {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.mtbank-modal__title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: bold;
+  text-align: center;
+  color: #e10098;
+}
+
+.mtbank-modal__subtitle {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.mtbank-section-title {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  margin: 16px 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #e10098;
+}
+
+.mtbank-credit-section, .mtbank-deposit-section {
+  background: #f9f9f9;
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.mtbank-debt-info {
+  background: #fff3e0;
+  border-radius: 12px;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+.mtbank-debt-info p {
+  margin: 5px 0;
+  font-size: 0.85rem;
+}
+
+.mtbank-debt-info p:first-child {
+  color: #e65100;
+  font-weight: bold;
+}
+
+.mtbank-btn--repay {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.mtbank-btn--repay:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mtbank-input, .mtbank-select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.mtbank-btn {
+  padding: 12px;
+  border: none;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  width: 100%;
+}
+
+.mtbank-btn:active {
+  transform: scale(0.97);
+}
+
+.mtbank-btn--credit {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+  color: white;
+}
+
+.mtbank-btn--deposit {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+}
+
+.mtbank-btn--credit:disabled, .mtbank-btn--deposit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.deposit-item {
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.deposit-item__amount {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.deposit-item__end {
+  font-size: 0.7rem;
+  color: #666;
+}
+.mtbank-modal__icon {
+  text-align: center;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mtbank-modal__icon img {
+  display: block;
+  margin: 0 auto;
+}

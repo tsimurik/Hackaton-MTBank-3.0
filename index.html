@@ -530,73 +530,75 @@
   <div class="buy-toast" id="buy-toast"></div>
 
   
-    <!-- Модальное окно МТБанк -->
-  <div class="mtbank-modal" id="mtbank-modal" hidden>
-    <div class="mtbank-modal__overlay"></div>
-    <div class="mtbank-modal__content">
-      <button class="mtbank-modal__close" id="mtbank-modal-close">✕</button>
-      <div class="mtbank-modal__icon">🏦</div>
-      <h3 class="mtbank-modal__title">МТБанк</h3>
-      <p class="mtbank-modal__subtitle">Главный банк МТ Сити</p>
-      
-      <div class="mtbank-level">
-        <div class="mtbank-level__header">
-          <span class="mtbank-level__label">⭐ Уровень банка</span>
-          <span class="mtbank-level__value" id="mtbank-level">1</span>
-        </div>
-        <div class="mtbank-level__progress">
-          <div class="mtbank-level__progress-bar" id="mtbank-progress-bar" style="width: 0%"></div>
-        </div>
-        <div class="mtbank-level__count" id="mtbank-level-count">0 / 100</div>
+   <!-- Модальное окно МТБанк -->
+<div class="mtbank-modal" id="mtbank-modal" hidden>
+  <div class="mtbank-modal__overlay"></div>
+  <div class="mtbank-modal__content">
+    <button class="mtbank-modal__close" id="mtbank-modal-close">✕</button>
+    
+    <!-- Увеличенный спрайт МТБанка -->
+    <div class="mtbank-modal__icon" id="mtbank-modal-icon">
+      <img src="assets/sprites/buildings/bank.png" alt="МТБанк" style="width:100px; height:100px; object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div style="display:none; font-size:64px; text-align:center;">🏦</div>
+    </div>
+    
+    <h3 class="mtbank-modal__title">МТБанк</h3>
+    <p class="mtbank-modal__subtitle">Главный банк города</p>
+    
+    <!-- Уровень банка -->
+    <div class="mtbank-level">
+      <div class="mtbank-level__header">
+        <span class="mtbank-level__label">⭐ Уровень банка</span>
+        <span class="mtbank-level__value" id="mtbank-level">1</span>
       </div>
-      
-      <div class="mtbank-stats">
-        <div class="mtbank-stat">
-          <span class="mtbank-stat__label">💰 Ставка по вкладам</span>
-          <span class="mtbank-stat__value" id="mtbank-interest">5%</span>
-        </div>
+      <div class="mtbank-level__progress">
+        <div class="mtbank-level__progress-bar" id="mtbank-progress-bar" style="width: 0%"></div>
       </div>
-      
-      <div class="mtbank-actions">
-        <div class="mtbank-action">
-  <h4>💸 Погасить кредит</h4>
-  <p>Ваш долг: <span id="mtbank-credit-debt">0</span> ⭐</p>
-  <div class="mtbank-action__controls">
-    <button class="mtbank-btn mtbank-btn--repay" id="repay-credit-btn">Погасить кредит</button>
-  </div>
-</div>
-        <div class="mtbank-action">
-          <h4>💳 Кредит</h4>
-          <p>Получите очки прокачки в долг</p>
-          <div class="mtbank-action__controls">
-            <input type="number" id="credit-amount" class="mtbank-input" placeholder="Сумма" value="100">
-            <button class="mtbank-btn mtbank-btn--credit" id="credit-btn">Взять кредит</button>
-          </div>
-          <p class="mtbank-hint">⚠️ Вернуть нужно в 2 раза больше</p>
-        </div>
-        
-        <div class="mtbank-action">
-          <h4>📈 Вклад</h4>
-          <p>Вложите MTBank Tokens под проценты</p>
-          <div class="mtbank-action__controls">
-            <input type="number" id="deposit-amount" class="mtbank-input" placeholder="Сумма" value="100">
-            <select id="deposit-days" class="mtbank-select">
-              <option value="1">На 1 день (5%)</option>
-              <option value="3">На 3 дня (7%)</option>
-              <option value="7">На 7 дней (10%)</option>
-              <option value="30">На 30 дней (15%)</option>
-            </select>
-            <button class="mtbank-btn mtbank-btn--deposit" id="deposit-btn">Открыть вклад</button>
-          </div>
+      <div class="mtbank-level__count" id="mtbank-level-count">0 / 100</div>
+    </div>
+    
+    <!-- Кредитный блок -->
+    <div class="mtbank-credit-section">
+      <div class="mtbank-section-title">💳 Кредитование</div>
+      <div class="mtbank-action">
+        <p>Максимальная сумма: <span id="mtbank-max-credit">250</span> ⭐</p>
+        <div class="mtbank-action__controls">
+          <input type="number" id="credit-amount" class="mtbank-input" placeholder="Сумма кредита" value="100" min="1">
+          <button class="mtbank-btn mtbank-btn--credit" id="credit-btn">Взять кредит</button>
         </div>
       </div>
       
-      <div class="mtbank-deposits" id="mtbank-deposits">
-        <h4>📋 Активные вклады</h4>
-        <div id="deposits-list"></div>
+      <div class="mtbank-debt-info">
+        <p>💸 Текущий долг: <span id="mtbank-credit-debt">0</span> ⭐</p>
+        <p>💰 Сумма погашения: <span id="mtbank-repay-amount">0</span> ⭐ (в 1.7 раза больше)</p>
+        <button class="mtbank-btn mtbank-btn--repay" id="repay-credit-btn" disabled>Погасить кредит</button>
       </div>
     </div>
+    
+    <!-- Вкладной блок -->
+    <div class="mtbank-deposit-section">
+      <div class="mtbank-section-title">📈 Вклады</div>
+      <div class="mtbank-action">
+        <div class="mtbank-action__controls">
+          <input type="number" id="deposit-amount" class="mtbank-input" placeholder="Сумма вклада" value="100">
+          <select id="deposit-days" class="mtbank-select">
+            <option value="3">На 3 дня (0.5% × ур. банка)</option>
+            <option value="7">На 7 дней (1% × ур. банка)</option>
+            <option value="14">На 14 дней (1.5% × ур. банка)</option>
+            <option value="30">На 30 дней (2% × ур. банка)</option>
+          </select>
+          <button class="mtbank-btn mtbank-btn--deposit" id="deposit-btn">Оформить вклад</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Активные вклады -->
+    <div class="mtbank-deposits">
+      <div class="mtbank-section-title">📋 Активные вклады</div>
+      <div id="deposits-list"></div>
+    </div>
   </div>
+</div>
   <!-- Модальное окно выбора здания -->
 <div class="build-modal" id="build-modal" hidden>
   <div class="build-modal__overlay"></div>

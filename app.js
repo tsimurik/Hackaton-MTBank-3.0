@@ -6,6 +6,8 @@
   var balanceSkillPoints = 0;
   var balanceMtBanks = 0;
   var buildingPriceMultiplier = 1.0;
+  // Максимальное количество часов накопления дохода (24 часа)
+var MAX_ACCUMULATION_HOURS = 24;
 
   function randomAlphanumeric(len) {
     var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -394,24 +396,57 @@
   let isoContainer = null;
   let buildMode = true;
 
-  // ========== ФУНКЦИИ ОПЫТА МТБАНКА ==========
+  // ========== МТБАНК (ЦЕНТРАЛЬНОЕ ЗДАНИЕ) ==========
+
+var MTBANK_KEY = "rr_mtbank_";
+
+function getMtbankData() {
+  var currentUser = getCurrentUser();
+  if (!currentUser) return null;
   
-  function getMtbankLevel() {
-    var currentUser = getCurrentUser();
-    return currentUser?.mtbankLevel || 1;
+  var key = MTBANK_KEY + currentUser.id;
+  try {
+    var raw = localStorage.getItem(key);
+    if (!raw) {
+      return {
+        deposits: [],
+        creditDebt: 0
+      };
+    }
+    return JSON.parse(raw);
+  } catch (e) {
+    return {
+      deposits: [],
+      creditDebt: 0
+    };
   }
+}
 
-  function getMtbankExp() {
-    var currentUser = getCurrentUser();
-    return currentUser?.mtbankExp || 0;
-  }
+function saveMtbankData(data) {
+  var currentUser = getCurrentUser();
+  if (!currentUser) return;
+  var key = MTBANK_KEY + currentUser.id;
+  localStorage.setItem(key, JSON.stringify(data));
+}
 
-  function getMtbankExpToNext() {
-    var currentUser = getCurrentUser();
-    return currentUser?.mtbankExpToNext || 100;
-  }
+// ========== ФУНКЦИИ ОПЫТА МТБАНКА ==========
 
- function addMtbankExp(amount, source) {
+function getMtbankLevel() {
+  var currentUser = getCurrentUser();
+  return currentUser?.mtbankLevel || 1;
+}
+
+function getMtbankExp() {
+  var currentUser = getCurrentUser();
+  return currentUser?.mtbankExp || 0;
+}
+
+function getMtbankExpToNext() {
+  var currentUser = getCurrentUser();
+  return currentUser?.mtbankExpToNext || 100;
+}
+
+function addMtbankExp(amount, source) {
   var currentUser = getCurrentUser();
   if (!currentUser) return false;
   
@@ -419,7 +454,6 @@
   if (!currentUser.mtbankExp) currentUser.mtbankExp = 0;
   if (!currentUser.mtbankExpToNext) currentUser.mtbankExpToNext = 100;
   
-  var oldLevel = currentUser.mtbankLevel;
   currentUser.mtbankExp += amount;
   var leveledUp = false;
   
@@ -436,24 +470,11 @@
   users[currentUser.id] = currentUser;
   saveAllUsers(users);
   
-  // 🔴 ВАЖНО: Обновляем отображение в игре
+  // Обновляем отображение
   updateMtbankUI();
   
-  // 🔴 Также обновляем отображение в верхней панели (если она есть)
-  var levelSpan = document.getElementById("mtbank-level");
-  if (levelSpan) levelSpan.textContent = currentUser.mtbankLevel;
-  
-  var expSpan = document.getElementById("mtbank-exp");
-  if (expSpan) expSpan.textContent = `${currentUser.mtbankExp} / ${currentUser.mtbankExpToNext}`;
-  
-  var progressBar = document.getElementById("mtbank-progress");
-  if (progressBar) {
-    var percent = (currentUser.mtbankExp / currentUser.mtbankExpToNext) * 100;
-    progressBar.style.width = percent + "%";
-  }
-  
-  if (leveledUp) {
-    renderGrid(); // Перерисовываем для обновления доступных зданий
+  if (leveledUp && typeof renderGrid === 'function') {
+    renderGrid();
   }
   
   if (source) {
@@ -463,7 +484,7 @@
   return leveledUp;
 }
 
-  function updateMtbankUI() {
+function updateMtbankUI() {
   var currentUser = getCurrentUser();
   if (!currentUser) return;
   
@@ -482,28 +503,416 @@
   var progressBar = document.getElementById("mtbank-progress");
   if (progressBar) progressBar.style.width = percent + "%";
   
-  // 🔴 ОБНОВЛЯЕМ УРОВЕНЬ НА КАРТЕ (на самом здании МТБанка)
-  var mtbankTile = document.querySelector('.city-tile');
-  if (mtbankTile) {
-    // Ищем все тайлы и находим тот, где есть банк
-    var tiles = document.querySelectorAll('.city-tile');
-    for (var i = 0; i < tiles.length; i++) {
-      var tile = tiles[i];
-      var levelDisplay = tile.querySelector('.bank-level-display span');
-      if (levelDisplay && levelDisplay.textContent.includes('🏦')) {
-        levelDisplay.textContent = '🏦 Lv.' + level;
-        break;
-      }
+  // Обновляем уровень в buildings массиве (для сохранения)
+  if (typeof buildings !== 'undefined' && buildings[12] && buildings[12].type === "mtbank") {
+    buildings[12].level = level;
+    if (typeof saveGameBuildings === 'function') {
+      saveGameBuildings({ buildings: buildings, lastUpdate: Date.now() });
     }
   }
   
-  // Также обновляем уровень в buildings массиве (для сохранения)
-  if (buildings[12] && buildings[12].type === "mtbank") {
-    buildings[12].level = level;
-    saveGameBuildings({ buildings: buildings, lastUpdate: Date.now() });
+  console.log("🔄 Обновлён UI МТБанка: уровень", level);
+}
+
+function updateMtbankModalContent() {
+  var currentUser = getCurrentUser();
+  var mtData = getMtbankData();
+  if (!currentUser || !mtData) return;
+  
+  var bankLevel = currentUser.mtbankLevel || 1;
+  var creditDebt = mtData.creditDebt || 0;
+  var maxCredit = 250 * bankLevel;
+  var repayAmount = Math.floor(creditDebt * 1.7);
+  
+  // Обновляем информацию о кредите
+  var creditDebtSpan = document.getElementById("mtbank-credit-debt");
+  if (creditDebtSpan) creditDebtSpan.textContent = creditDebt;
+  
+  var repayAmountSpan = document.getElementById("mtbank-repay-amount");
+  if (repayAmountSpan) repayAmountSpan.textContent = repayAmount;
+  
+  var maxCreditSpan = document.getElementById("mtbank-max-credit");
+  if (maxCreditSpan) maxCreditSpan.textContent = maxCredit;
+  
+  // Обновляем кнопки
+  var creditBtn = document.getElementById("credit-btn");
+  var repayBtn = document.getElementById("repay-credit-btn");
+  
+  if (creditBtn) {
+    creditBtn.disabled = creditDebt > 0;
   }
   
-  console.log("🔄 Обновлён UI МТБанка: уровень", level);
+  if (repayBtn) {
+    repayBtn.disabled = creditDebt <= 0 || (currentUser.balanceSkillPoints || 0) < repayAmount;
+  }
+  
+  // Обновляем список вкладов
+  updateDepositsList();
+}
+
+function updateDepositsList() {
+  var mtData = getMtbankData();
+  if (!mtData) return;
+  
+  var depositsList = document.getElementById("deposits-list");
+  if (!depositsList) return;
+  
+  if (mtData.deposits.length === 0) {
+    depositsList.innerHTML = '<p style="text-align:center; color:#999; font-size:0.75rem; padding:10px;">Нет активных вкладов</p>';
+    return;
+  }
+  
+  depositsList.innerHTML = "";
+  for (var i = 0; i < mtData.deposits.length; i++) {
+    var d = mtData.deposits[i];
+    var remainingMs = d.endDate - Date.now();
+    var remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
+    
+    var div = document.createElement("div");
+    div.className = "deposit-item";
+    div.innerHTML = `
+      <div class="deposit-item__info">
+        <div><span class="deposit-item__amount">${d.amount} 💰</span> на ${d.days} дн. под ${d.interestRate}%</div>
+        <div class="deposit-item__end">Осталось: ${remainingDays} дн.</div>
+      </div>
+    `;
+    depositsList.appendChild(div);
+  }
+}
+
+function checkDeposits() {
+  var currentUser = getCurrentUser();
+  var mtData = getMtbankData();
+  if (!currentUser || !mtData) return;
+  
+  var now = Date.now();
+  var needSave = false;
+  
+  for (var i = mtData.deposits.length - 1; i >= 0; i--) {
+    var deposit = mtData.deposits[i];
+    if (now >= deposit.endDate) {
+      var profit = Math.floor(deposit.amount * deposit.interestRate / 100);
+      currentUser.balanceMtBanks = (currentUser.balanceMtBanks || 0) + deposit.amount + profit;
+      mtData.deposits.splice(i, 1);
+      needSave = true;
+      showGameToast(`📊 Вклад закрыт! Получено ${deposit.amount + profit} 💰 (${profit} 💰 прибыль)`);
+    }
+  }
+  
+  if (needSave) {
+    var users = loadAllUsers();
+    users[currentUser.id] = currentUser;
+    saveAllUsers(users);
+    saveMtbankData(mtData);
+    balanceMtBanks = currentUser.balanceMtBanks;
+    syncBalancesToDom();
+    if (typeof updateGameBalanceDisplay === 'function') updateGameBalanceDisplay();
+    updateMtbankUI();
+    updateMtbankModalContent();
+  }
+}
+
+function takeCredit() {
+  console.log("💰 takeCredit function called");
+  var currentUser = getCurrentUser();
+  var mtData = getMtbankData();
+  if (!currentUser || !mtData) {
+    showGameToast("❌ Ошибка: пользователь не найден!");
+    return;
+  }
+  
+  var amountInput = document.getElementById("credit-amount");
+  if (!amountInput) {
+    showGameToast("❌ Ошибка: поле ввода не найдено!");
+    return;
+  }
+  
+  var amount = parseInt(amountInput.value);
+  if (isNaN(amount) || amount <= 0) {
+    showGameToast("❌ Введите корректную сумму!");
+    return;
+  }
+  
+  var bankLevel = currentUser.mtbankLevel || 1;
+  var maxCredit = 250 * bankLevel;
+  
+  if (amount > maxCredit) {
+    showGameToast(`❌ Максимальный кредит для ${bankLevel} уровня: ${maxCredit} ⭐`);
+    return;
+  }
+  
+  if (mtData.creditDebt > 0) {
+    showGameToast("❌ У вас уже есть непогашенный кредит! Сначала погасите его.");
+    return;
+  }
+  
+  currentUser.balanceSkillPoints = (currentUser.balanceSkillPoints || 0) + amount;
+  mtData.creditDebt = amount;
+  
+  var users = loadAllUsers();
+  users[currentUser.id] = currentUser;
+  saveAllUsers(users);
+  saveMtbankData(mtData);
+  
+  balanceSkillPoints = currentUser.balanceSkillPoints;
+  syncBalancesToDom();
+  if (typeof updateGameBalanceDisplay === 'function') updateGameBalanceDisplay();
+  updateMtbankUI();
+  updateMtbankModalContent();
+  
+  showGameToast(`💰 Вы получили ${amount} ⭐ в кредит! Вернуть нужно ${Math.floor(amount * 1.7)} ⭐`);
+}
+
+function repayCredit() {
+  console.log("💸 repayCredit function called");
+  var currentUser = getCurrentUser();
+  var mtData = getMtbankData();
+  if (!currentUser || !mtData) return;
+  
+  if (mtData.creditDebt <= 0) {
+    showGameToast("❌ У вас нет активного кредита!");
+    return;
+  }
+  
+  var repayAmount = Math.floor(mtData.creditDebt * 1.7);
+  
+  if ((currentUser.balanceSkillPoints || 0) < repayAmount) {
+    showGameToast(`❌ Недостаточно очков прокачки для погашения кредита! Нужно ${repayAmount} ⭐`);
+    return;
+  }
+  
+  currentUser.balanceSkillPoints -= repayAmount;
+  mtData.creditDebt = 0;
+  
+  var users = loadAllUsers();
+  users[currentUser.id] = currentUser;
+  saveAllUsers(users);
+  saveMtbankData(mtData);
+  
+  balanceSkillPoints = currentUser.balanceSkillPoints;
+  syncBalancesToDom();
+  if (typeof updateGameBalanceDisplay === 'function') updateGameBalanceDisplay();
+  updateMtbankUI();
+  updateMtbankModalContent();
+  
+  showGameToast(`✅ Кредит погашен! Вы заплатили ${repayAmount} ⭐`);
+}
+
+function createDeposit() {
+  console.log("📈 createDeposit function called");
+  var currentUser = getCurrentUser();
+  var mtData = getMtbankData();
+  if (!currentUser || !mtData) return;
+  
+  var amountInput = document.getElementById("deposit-amount");
+  var daysSelect = document.getElementById("deposit-days");
+  
+  if (!amountInput || !daysSelect) {
+    showGameToast("❌ Ошибка: элементы не найдены!");
+    return;
+  }
+  
+  var amount = parseInt(amountInput.value);
+  var days = parseInt(daysSelect.value);
+  
+  if (isNaN(amount) || amount <= 0) {
+    showGameToast("❌ Введите корректную сумму!");
+    return;
+  }
+  
+  if ((currentUser.balanceMtBanks || 0) < amount) {
+    showGameToast("❌ Недостаточно MTBank Tokens!");
+    return;
+  }
+  
+  var bankLevel = currentUser.mtbankLevel || 1;
+  var interestRate = 0;
+  
+  switch(days) {
+    case 3: interestRate = 0.5 * bankLevel; break;
+    case 7: interestRate = 1.0 * bankLevel; break;
+    case 14: interestRate = 1.5 * bankLevel; break;
+    case 30: interestRate = 2.0 * bankLevel; break;
+    default: interestRate = 0.5 * bankLevel;
+  }
+  
+  var endDate = Date.now() + (days * 24 * 60 * 60 * 1000);
+  
+  currentUser.balanceMtBanks -= amount;
+  
+  mtData.deposits.push({
+    amount: amount,
+    days: days,
+    interestRate: interestRate,
+    endDate: endDate,
+    startDate: Date.now()
+  });
+  
+  var users = loadAllUsers();
+  users[currentUser.id] = currentUser;
+  saveAllUsers(users);
+  saveMtbankData(mtData);
+  
+  balanceMtBanks = currentUser.balanceMtBanks;
+  syncBalancesToDom();
+  if (typeof updateGameBalanceDisplay === 'function') updateGameBalanceDisplay();
+  updateMtbankUI();
+  updateMtbankModalContent();
+  
+  showGameToast(`📈 Вклад открыт! ${amount} 💰 на ${days} дней под ${interestRate}%`);
+}
+
+function openMtbankModal() {
+  console.log("🔓 openMtbankModal вызван");
+  
+  // Проверяем, есть ли окно в DOM
+  var modal = document.getElementById("mtbank-modal");
+  console.log("Поиск mtbank-modal:", modal);
+  
+  if (!modal) {
+    console.log("❌ Окно не найдено, создаём...");
+    createMtbankModal();
+    modal = document.getElementById("mtbank-modal");
+  }
+  
+  if (modal) {
+    updateMtbankUI();
+    updateMtbankModalContent();
+    modal.removeAttribute("hidden");
+    console.log("✅ Модальное окно МТБанка открыто");
+  } else {
+    console.log("❌ Не удалось создать/найти модальное окно!");
+  }
+}
+
+function closeMtbankModal() {
+  console.log("🔒 closeMtbankModal вызван");
+  var modal = document.getElementById("mtbank-modal");
+  if (modal) {
+    modal.setAttribute("hidden", "");
+  }
+}
+
+function createMtbankModal() {
+  console.log("🏗 Создаём модальное окно МТБанка");
+  
+  var modalHtml = `
+    <div class="mtbank-modal" id="mtbank-modal" hidden>
+      <div class="mtbank-modal__overlay"></div>
+      <div class="mtbank-modal__content">
+        <button class="mtbank-modal__close" id="mtbank-modal-close">✕</button>
+        
+        <div class="mtbank-modal__icon">
+          <img src="assets/sprites/buildings/bank.png" alt="МТБанк" style="width:80px; height:80px; object-fit:contain; margin:0 auto; display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+          <div style="display:none; font-size:64px; text-align:center;">🏦</div>
+        </div>
+        
+        <h3 class="mtbank-modal__title">МТБанк</h3>
+        <p class="mtbank-modal__subtitle">Главный банк города</p>
+        
+        <div class="mtbank-level">
+          <div class="mtbank-level__header">
+            <span class="mtbank-level__label">⭐ Уровень банка</span>
+            <span class="mtbank-level__value" id="mtbank-level">1</span>
+          </div>
+          <div class="mtbank-level__progress">
+            <div class="mtbank-level__progress-bar" id="mtbank-progress-bar" style="width: 0%"></div>
+          </div>
+          <div class="mtbank-level__count" id="mtbank-level-count">0 / 100</div>
+        </div>
+        
+        <div class="mtbank-credit-section">
+          <div class="mtbank-section-title">💳 Кредитование</div>
+          <div class="mtbank-action">
+            <p>Максимальная сумма: <span id="mtbank-max-credit">250</span> ⭐</p>
+            <div class="mtbank-action__controls">
+              <input type="number" id="credit-amount" class="mtbank-input" placeholder="Сумма кредита" value="100" min="1" step="50">
+              <button class="mtbank-btn mtbank-btn--credit" id="credit-btn">Взять кредит</button>
+            </div>
+          </div>
+          
+          <div class="mtbank-debt-info">
+            <p>💸 Текущий долг: <span id="mtbank-credit-debt">0</span> ⭐</p>
+            <p>💰 Сумма погашения: <span id="mtbank-repay-amount">0</span> ⭐</p>
+            <button class="mtbank-btn mtbank-btn--repay" id="repay-credit-btn" disabled>Погасить кредит</button>
+          </div>
+        </div>
+        
+        <div class="mtbank-deposit-section">
+          <div class="mtbank-section-title">📈 Вклады</div>
+          <div class="mtbank-action">
+            <div class="mtbank-action__controls">
+              <input type="number" id="deposit-amount" class="mtbank-input" placeholder="Сумма вклада" value="100" min="1" step="50">
+              <select id="deposit-days" class="mtbank-select">
+                <option value="3">На 3 дня (0.5% × ур. банка)</option>
+                <option value="7">На 7 дней (1% × ур. банка)</option>
+                <option value="14">На 14 дней (1.5% × ур. банка)</option>
+                <option value="30">На 30 дней (2% × ур. банка)</option>
+              </select>
+              <button class="mtbank-btn mtbank-btn--deposit" id="deposit-btn">Оформить вклад</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mtbank-deposits">
+          <div class="mtbank-section-title">📋 Активные вклады</div>
+          <div id="deposits-list"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+  console.log("✅ Модальное окно МТБанка создано");
+  
+  // Привязываем события
+  bindMtbankModalEvents();
+}
+
+// Функция для принудительного обновления кнопок (вызывать после загрузки модального окна)
+function bindMtbankModalEvents() {
+  console.log("🔗 Привязка кнопок МТБанка...");
+  
+  var creditBtn = document.getElementById("credit-btn");
+  var repayBtn = document.getElementById("repay-credit-btn");
+  var depositBtn = document.getElementById("deposit-btn");
+  var closeBtn = document.getElementById("mtbank-modal-close");
+  var overlay = document.querySelector("#mtbank-modal .mtbank-modal__overlay");
+  
+  if (creditBtn) {
+    var newCreditBtn = creditBtn.cloneNode(true);
+    creditBtn.parentNode.replaceChild(newCreditBtn, creditBtn);
+    newCreditBtn.addEventListener("click", takeCredit);
+    console.log("✅ Кнопка кредита привязана");
+  }
+  
+  if (repayBtn) {
+    var newRepayBtn = repayBtn.cloneNode(true);
+    repayBtn.parentNode.replaceChild(newRepayBtn, repayBtn);
+    newRepayBtn.addEventListener("click", repayCredit);
+    console.log("✅ Кнопка погашения привязана");
+  }
+  
+  if (depositBtn) {
+    var newDepositBtn = depositBtn.cloneNode(true);
+    depositBtn.parentNode.replaceChild(newDepositBtn, depositBtn);
+    newDepositBtn.addEventListener("click", createDeposit);
+    console.log("✅ Кнопка вклада привязана");
+  }
+  
+  if (closeBtn) {
+    var newCloseBtn = closeBtn.cloneNode(true);
+    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+    newCloseBtn.addEventListener("click", closeMtbankModal);
+    console.log("✅ Кнопка закрытия привязана");
+  }
+  
+  if (overlay) {
+    var newOverlay = overlay.cloneNode(true);
+    overlay.parentNode.replaceChild(newOverlay, overlay);
+    newOverlay.addEventListener("click", closeMtbankModal);
+    console.log("✅ Оверлей привязан");
+  }
 }
 
   // ========== ЗАДАНИЯ ==========
@@ -1027,11 +1436,19 @@
   // ========== ИГРОВЫЕ ФУНКЦИИ ==========
 
   function getBuildingIncome(building) {
-    if (!building) return 0;
-    var typeData = BUILDING_TYPES[building.type];
-    if (!typeData) return 0;
-    return Math.floor(typeData.baseIncome * Math.pow(typeData.upgradeMultiplier, building.level - 1));
-  }
+  if (!building) return 0;
+  var typeData = BUILDING_TYPES[building.type];
+  if (!typeData) return 0;
+  return Math.floor(typeData.baseIncome * Math.pow(typeData.upgradeMultiplier, building.level - 1));
+}
+
+// Новая функция: получить максимальный накопленный доход для бизнеса
+function getMaxPendingIncome(building) {
+  if (!building) return 0;
+  var hourlyIncome = getBuildingIncome(building);
+  // Максимум = доход за 24 часа
+  return hourlyIncome * MAX_ACCUMULATION_HOURS;
+}
 
   function getUpgradeCost(building) {
     if (!building) return 0;
@@ -1085,32 +1502,39 @@
   }
 
   function updatePendingIncome() {
-    var currentUser = getCurrentUser();
-    if (!currentUser) return;
-    
-    var gameData = loadGameBuildings();
-    buildings = gameData.buildings;
-    
-    var now = Date.now();
-    var timeDiff = (now - (gameData.lastUpdate || now)) / (1000 * 60 * 60);
-    
-    if (timeDiff > 0 && timeDiff < 24) {
-      for (var i = 0; i < buildings.length; i++) {
-        var building = buildings[i];
-        if (building && building.type !== "mtbank") {
-          if (!building.pendingIncome) building.pendingIncome = 0;
-          var hourlyIncome = getBuildingIncome(building);
-          var earned = Math.floor(hourlyIncome * timeDiff);
-          building.pendingIncome += earned;
+  var currentUser = getCurrentUser();
+  if (!currentUser) return;
+  
+  var gameData = loadGameBuildings();
+  buildings = gameData.buildings;
+  
+  var now = Date.now();
+  var timeDiff = (now - (gameData.lastUpdate || now)) / (1000 * 60 * 60);
+  
+  if (timeDiff > 0 && timeDiff < 24) {
+    for (var i = 0; i < buildings.length; i++) {
+      var building = buildings[i];
+      if (building && building.type !== "mtbank") {
+        if (!building.pendingIncome) building.pendingIncome = 0;
+        var hourlyIncome = getBuildingIncome(building);
+        var maxIncome = getMaxPendingIncome(building);
+        var earned = Math.floor(hourlyIncome * timeDiff);
+        
+        // Проверяем, не превысит ли новый доход максимальный
+        var newIncome = building.pendingIncome + earned;
+        if (newIncome >= maxIncome) {
+          building.pendingIncome = maxIncome;
+        } else {
+          building.pendingIncome = newIncome;
         }
       }
     }
-    
-    gameData.lastUpdate = now;
-    saveGameBuildings(gameData);
-    updateDisplays();
   }
-
+  
+  gameData.lastUpdate = now;
+  saveGameBuildings(gameData);
+  updateDisplays();
+}
   function updateDisplays() {
     var currentUser = getCurrentUser();
     if (!currentUser) return;
@@ -1191,11 +1615,11 @@
     ` : '';
     
     const pending = building?.pendingIncome || 0;
-    const incomeHTML = (pending > 0 && building?.type !== "mtbank") ? `
-      <div style="position:absolute;top:3px;right:3px;background:#4CAF50;border-radius:10px;padding:1px 4px;z-index:15;">
-        <span style="font-size:6px;font-weight:bold;color:white;">+${Math.floor(pending)}</span>
-      </div>
-    ` : '';
+const incomeHTML = (pending > 0 && building?.type !== "mtbank") ? `
+  <div style="position:absolute;top:3px;right:3px;background:#4CAF50;border-radius:10px;padding:1px 4px;z-index:15;">
+    <span style="font-size:6px;font-weight:bold;color:white;">+${Math.floor(pending)}</span>
+  </div>
+` : '';
     
     const emptyHTML = !building && !isCenter && buildMode ? `
       <div style="position:absolute;top:35%;left:50%;transform:translate(-50%, -50%);width:30px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(100,100,100,0.45);border:1.5px dashed rgba(220,220,220,0.8);font-size:14px;font-weight:bold;color:rgba(255,255,255,0.8);pointer-events:none;z-index:20;">+</div>
@@ -1203,6 +1627,26 @@
     
     return tileBg(r, c) + levelHTML + bankLevelHTML + incomeHTML + buildingHTML + emptyHTML;
   }
+
+  function normalizePendingIncomes() {
+  var gameData = loadGameBuildings();
+  var needSave = false;
+  
+  for (var i = 0; i < gameData.buildings.length; i++) {
+    var building = gameData.buildings[i];
+    if (building && building.type !== "mtbank" && building.pendingIncome) {
+      var maxIncome = getMaxPendingIncome(building);
+      if (building.pendingIncome > maxIncome) {
+        building.pendingIncome = maxIncome;
+        needSave = true;
+      }
+    }
+  }
+  
+  if (needSave) {
+    saveGameBuildings(gameData);
+  }
+}
 
   function renderGrid() {
     if (!isoContainer) return;
@@ -1372,34 +1816,52 @@
     currentSelectedBlock = null;
   }
 
-  function openInfoModal(index) {
-    var building = buildings[index];
-    if (!building) return;
-    
-    currentInfoIndex = index;
-    var typeData = BUILDING_TYPES[building.type];
-    
-    var iconContainer = document.getElementById("info-icon");
-    if (iconContainer) {
-      iconContainer.innerHTML = `<img src="${SPRITE_PATH}${typeData.sprite}" style="width:50px;height:50px;object-fit:contain;" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\"font-size:48px;\">${typeData.icon}</div>'">`;
-    }
-    
-    var purchasePrice = building.purchasePrice || typeData.cost;
-    var sellPrice = Math.floor(purchasePrice / 2);
-    
-    document.getElementById("info-title").textContent = typeData.name;
-    document.getElementById("info-type").textContent = typeData.name;
-    document.getElementById("info-level").textContent = building.level;
-    document.getElementById("info-income").textContent = building.type === "mtbank" ? "Центральный банк" : getBuildingIncome(building);
-    document.getElementById("info-pending").textContent = building.type === "mtbank" ? "—" : Math.floor(building.pendingIncome || 0);
-    document.getElementById("info-upgrade-cost").textContent = building.type === "mtbank" ? "Не улучшается" : getUpgradeCost(building);
-    
-    var sellValueSpan = document.getElementById("info-sell-value");
-    if (sellValueSpan) sellValueSpan.textContent = building.type === "mtbank" ? "Не продаётся" : sellPrice;
-    
-    var modal = document.getElementById("info-modal");
-    if (modal) modal.removeAttribute("hidden");
+ function openInfoModal(index) {
+  var building = buildings[index];
+  if (!building) {
+    showGameToast("❌ Здесь нет здания!");
+    return;
   }
+  
+  // Если это МТБанк - открываем специальное окно
+  if (building.type === "mtbank") {
+    console.log("🏦 Открываем окно МТБанка");
+    openMtbankModal();
+    return;
+  }
+  
+  currentInfoIndex = index;
+  var typeData = BUILDING_TYPES[building.type];
+  if (!typeData) {
+    showGameToast("❌ Ошибка: тип здания не найден!");
+    return;
+  }
+  
+  var iconContainer = document.getElementById("info-icon");
+  if (iconContainer) {
+    iconContainer.innerHTML = `<img src="${SPRITE_PATH}${typeData.sprite}" style="width:50px;height:50px;object-fit:contain;" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\"font-size:48px;\">${typeData.icon}</div>'">`;
+  }
+  
+  var purchasePrice = building.purchasePrice || typeData.cost;
+  var sellPrice = Math.floor(purchasePrice / 2);
+  var hourlyIncome = getBuildingIncome(building);
+  var maxPending = getMaxPendingIncome(building);
+  var currentPending = Math.floor(building.pendingIncome || 0);
+  var pendingPercent = maxPending > 0 ? (currentPending / maxPending) * 100 : 0;
+  
+  document.getElementById("info-title").textContent = typeData.name;
+  document.getElementById("info-type").textContent = typeData.name;
+  document.getElementById("info-level").textContent = building.level;
+  document.getElementById("info-income").textContent = hourlyIncome + " MtB/ч";
+  document.getElementById("info-pending").innerHTML = `${currentPending} / ${maxPending} MtB <div style="background:#ddd; border-radius:5px; height:6px; margin-top:6px; overflow:hidden;"><div style="width:${pendingPercent}%; height:100%; background:linear-gradient(90deg,#4CAF50,#8BC34A); border-radius:5px;"></div></div>`;
+  document.getElementById("info-upgrade-cost").textContent = getUpgradeCost(building);
+  
+  var sellValueSpan = document.getElementById("info-sell-value");
+  if (sellValueSpan) sellValueSpan.textContent = sellPrice;
+  
+  var modal = document.getElementById("info-modal");
+  if (modal) modal.removeAttribute("hidden");
+}
 
   function closeInfoModal() {
     var modal = document.getElementById("info-modal");
@@ -1814,6 +2276,8 @@
     
     var gameData = loadGameBuildings();
     buildings = gameData.buildings;
+
+    normalizePendingIncomes();
     
     updateBuildingPriceMultiplier();
     updatePendingIncome();
@@ -1862,6 +2326,7 @@
     renderCalendarGrid();
     updateStreakDisplay();
     updateMtbankUI();
+    bindMtbankModalEvents();
   }
 
   // ========== ИНИЦИАЛИЗАЦИЯ ==========
@@ -2031,4 +2496,8 @@
   } else {
     init();
   }
+  // Периодическая проверка вкладов (каждую минуту)
+  setInterval(function() {
+    checkDeposits();
+  }, 60000);
 })();
