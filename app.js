@@ -88,6 +88,16 @@
     if (gameBalanceSpan) gameBalanceSpan.textContent = balanceMtBanks;
   }
 
+  function refreshProfileFromUser() {
+    var currentUser = getCurrentUser();
+    if (!currentUser) return;
+    
+    balanceSkillPoints = currentUser.balanceSkillPoints || 0;
+    balanceMtBanks = currentUser.balanceMtBanks || 0;
+    syncBalancesToDom();
+    if (typeof updateDisplays === 'function') updateDisplays();
+  }
+
   function hideRegisterShowApp() {
     var reg = document.getElementById("screen-register");
     var login = document.getElementById("screen-login");
@@ -265,6 +275,9 @@
       inviterReferral: inviterCode || "",
       balanceSkillPoints: 0,
       balanceMtBanks: 2000,
+      mtbankLevel: 1,
+      mtbankExp: 0,
+      mtbankExpToNext: 100,
       createdAt: Date.now()
     };
     
@@ -297,6 +310,9 @@
     for (var userId in users) {
       var user = users[userId];
       if (user.id === id && user.nicknameLower === normalizedNickname) {
+        if (!user.mtbankLevel) user.mtbankLevel = 1;
+        if (!user.mtbankExp) user.mtbankExp = 0;
+        if (!user.mtbankExpToNext) user.mtbankExpToNext = 100;
         setCurrentUser(userId);
         return { success: true, user: user };
       }
@@ -314,27 +330,53 @@
     }
   }
 
+  // ========== ФУНКЦИЯ ДОБАВЛЕНИЯ ОЧКОВ ПРОКАЧКИ ==========
+  function addSkillPoints(amount) {
+    var currentUser = getCurrentUser();
+    if (!currentUser) {
+      showGameToast("❌ Пользователь не найден!");
+      return false;
+    }
+    
+    if (isNaN(amount) || amount <= 0) {
+      amount = 100;
+    }
+    
+    currentUser.balanceSkillPoints = (currentUser.balanceSkillPoints || 0) + amount;
+    
+    var users = loadAllUsers();
+    users[currentUser.id] = currentUser;
+    saveAllUsers(users);
+    
+    balanceSkillPoints = currentUser.balanceSkillPoints;
+    syncBalancesToDom();
+    if (typeof updateDisplays === 'function') updateDisplays();
+    
+    showGameToast("✨ Добавлено " + amount + " очков прокачки!");
+    return true;
+  }
+
   // ========== ПУТЬ К СПРАЙТАМ ==========
-  var SPRITE_PATH = "buildings/";
+  var SPRITE_PATH = "assets/sprites/buildings/";
 
   // ========== КОНФИГУРАЦИЯ ЗДАНИЙ ==========
   const BUILDING_TYPES = {
-    mtbank: { name: "МТБанк", icon: "🏦", sprite: "bank.png", baseIncome: 0, upgradeMultiplier: 1, cost: 0, maxLevel: 3, category: 0, bg: '#f5e6a0', isMain: true },
-    coffee: { name: "Кофейня", icon: "☕", sprite: "cafe.png", baseIncome: 50, upgradeMultiplier: 1.5, cost: 100, maxLevel: 5, category: 1, bg: '#fff4e0' },
-    flowershop: { name: "Цветочный магазин", icon: "🌷", sprite: "flower.png", baseIncome: 55, upgradeMultiplier: 1.53, cost: 110, maxLevel: 5, category: 1, bg: '#ffe0f0' },
-    minimarket: { name: "Мини-магазин", icon: "🏪", sprite: "minimarket.png", baseIncome: 45, upgradeMultiplier: 1.52, cost: 90, maxLevel: 5, category: 1, bg: '#e0ffe0' },
-    foodtruck: { name: "Фудтрак", icon: "🚚", sprite: "foodtruck.png", baseIncome: 48, upgradeMultiplier: 1.54, cost: 95, maxLevel: 5, category: 1, bg: '#ffe8d0' },
-    icecream: { name: "Киоск мороженого", icon: "🍦", sprite: "icecream.png", baseIncome: 42, upgradeMultiplier: 1.51, cost: 85, maxLevel: 5, category: 1, bg: '#e0f0ff' },
-    restaurant: { name: "Ресторан", icon: "🍽️", sprite: "restaurant.png", baseIncome: 100, upgradeMultiplier: 1.6, cost: 250, maxLevel: 5, category: 2, bg: '#f0e0e0' },
-    shop: { name: "Магазин", icon: "🏪", sprite: "store.png", baseIncome: 110, upgradeMultiplier: 1.62, cost: 280, maxLevel: 5, category: 2, bg: '#e0e0ff' },
-    autoservice: { name: "Автосервис", icon: "🔧", sprite: "autoservice.png", baseIncome: 120, upgradeMultiplier: 1.63, cost: 300, maxLevel: 5, category: 2, bg: '#d0d0d0' },
-    itcompany: { name: "IT Компания", icon: "💻", sprite: "itoffice.png", baseIncome: 140, upgradeMultiplier: 1.65, cost: 350, maxLevel: 5, category: 2, bg: '#c0e0ff' },
-    gasstation: { name: "Заправка", icon: "⛽", sprite: "gasstation.png", baseIncome: 115, upgradeMultiplier: 1.61, cost: 290, maxLevel: 5, category: 2, bg: '#ffe0c0' },
-    businesspark: { name: "Бизнес-парк", icon: "🏢", sprite: "business-center.png", baseIncome: 500, upgradeMultiplier: 1.85, cost: 1200, maxLevel: 5, category: 3, bg: '#e0eeff' },
-    cinema: { name: "Кинотеатр", icon: "🎬", sprite: "cinema.png", baseIncome: 350, upgradeMultiplier: 1.78, cost: 800, maxLevel: 5, category: 3, bg: '#e0d0ff' },
-    construction: { name: "Стройкомпания", icon: "🏗️", sprite: "construction.png", baseIncome: 320, upgradeMultiplier: 1.75, cost: 750, maxLevel: 5, category: 3, bg: '#ffe8a0' },
-    warehouse: { name: "Склад", icon: "🏭", sprite: "warehouse.png", baseIncome: 250, upgradeMultiplier: 1.7, cost: 600, maxLevel: 5, category: 3, bg: '#d0c0a0' },
-    mall: { name: "Торговый центр", icon: "🏬", sprite: "mall.png", baseIncome: 450, upgradeMultiplier: 1.82, cost: 1100, maxLevel: 5, category: 3, bg: '#ffd0e0' }
+    mtbank: { name: "МТБанк", icon: "🏦", sprite: "bank.png", baseIncome: 0, upgradeMultiplier: 1, cost: 0, maxLevel: 3, category: 0, bg: '#f5e6a0', isMain: true, unlockLevel: 1 },
+    coffee: { name: "Кофейня", icon: "☕", sprite: "cafe.png", baseIncome: 50, upgradeMultiplier: 1.5, cost: 100, maxLevel: 5, category: 1, bg: '#fff4e0', unlockLevel: 1 },
+    flowershop: { name: "Цветочный магазин", icon: "🌷", sprite: "flower.png", baseIncome: 55, upgradeMultiplier: 1.53, cost: 110, maxLevel: 5, category: 1, bg: '#ffe0f0', unlockLevel: 1 },
+    minimarket: { name: "Мини-магазин", icon: "🏪", sprite: "minimarket.png", baseIncome: 45, upgradeMultiplier: 1.52, cost: 90, maxLevel: 5, category: 1, bg: '#e0ffe0', unlockLevel: 1 },
+    foodtruck: { name: "Фудтрак", icon: "🚚", sprite: "foodtruck.png", baseIncome: 48, upgradeMultiplier: 1.54, cost: 95, maxLevel: 5, category: 1, bg: '#ffe8d0', unlockLevel: 1 },
+    icecream: { name: "Киоск мороженого", icon: "🍦", sprite: "icecream.png", baseIncome: 42, upgradeMultiplier: 1.51, cost: 85, maxLevel: 5, category: 1, bg: '#e0f0ff', unlockLevel: 1 },
+    restaurant: { name: "Ресторан", icon: "🍽️", sprite: "restaurant.png", baseIncome: 100, upgradeMultiplier: 1.6, cost: 250, maxLevel: 5, category: 2, bg: '#f0e0e0', unlockLevel: 2 },
+    shop: { name: "Магазин", icon: "🏪", sprite: "store.png", baseIncome: 110, upgradeMultiplier: 1.62, cost: 280, maxLevel: 5, category: 2, bg: '#e0e0ff', unlockLevel: 2 },
+    autoservice: { name: "Автосервис", icon: "🔧", sprite: "autoservice.png", baseIncome: 120, upgradeMultiplier: 1.63, cost: 300, maxLevel: 5, category: 2, bg: '#d0d0d0', unlockLevel: 2 },
+    itcompany: { name: "IT Компания", icon: "💻", sprite: "itoffice.png", baseIncome: 140, upgradeMultiplier: 1.65, cost: 350, maxLevel: 5, category: 2, bg: '#c0e0ff', unlockLevel: 2 },
+    gasstation: { name: "Заправка", icon: "⛽", sprite: "gasstation.png", baseIncome: 115, upgradeMultiplier: 1.61, cost: 290, maxLevel: 5, category: 2, bg: '#ffe0c0', unlockLevel: 2 },
+    businesspark: { name: "Бизнес-парк", icon: "🏢", sprite: "business-center.png", baseIncome: 500, upgradeMultiplier: 1.85, cost: 1200, maxLevel: 5, category: 3, bg: '#e0eeff', unlockLevel: 3 },
+    cinema: { name: "Кинотеатр", icon: "🎬", sprite: "cinema.png", baseIncome: 350, upgradeMultiplier: 1.78, cost: 800, maxLevel: 5, category: 3, bg: '#e0d0ff', unlockLevel: 3 },
+    construction: { name: "Стройкомпания", icon: "🏗️", sprite: "construction.png", baseIncome: 320, upgradeMultiplier: 1.75, cost: 750, maxLevel: 5, category: 3, bg: '#ffe8a0', unlockLevel: 3 },
+    warehouse: { name: "Склад", icon: "🏭", sprite: "warehouse.png", baseIncome: 250, upgradeMultiplier: 1.7, cost: 600, maxLevel: 5, category: 3, bg: '#d0c0a0', unlockLevel: 3 },
+    mall: { name: "Торговый центр", icon: "🏬", sprite: "mall.png", baseIncome: 450, upgradeMultiplier: 1.82, cost: 1100, maxLevel: 5, category: 3, bg: '#ffd0e0', unlockLevel: 3 }
   };
 
   const BUILDING_KEYS = ["coffee", "flowershop", "minimarket", "foodtruck", "icecream", "restaurant", "shop", "autoservice", "itcompany", "gasstation", "businesspark", "cinema", "construction", "warehouse", "mall"];
@@ -352,32 +394,100 @@
   let isoContainer = null;
   let buildMode = true;
 
+  // ========== ФУНКЦИИ ОПЫТА МТБАНКА ==========
+  
+  function getMtbankLevel() {
+    var currentUser = getCurrentUser();
+    return currentUser?.mtbankLevel || 1;
+  }
+
+  function getMtbankExp() {
+    var currentUser = getCurrentUser();
+    return currentUser?.mtbankExp || 0;
+  }
+
+  function getMtbankExpToNext() {
+    var currentUser = getCurrentUser();
+    return currentUser?.mtbankExpToNext || 100;
+  }
+
+  function addMtbankExp(amount, source) {
+    var currentUser = getCurrentUser();
+    if (!currentUser) return false;
+    
+    if (!currentUser.mtbankLevel) currentUser.mtbankLevel = 1;
+    if (!currentUser.mtbankExp) currentUser.mtbankExp = 0;
+    if (!currentUser.mtbankExpToNext) currentUser.mtbankExpToNext = 100;
+    
+    var oldLevel = currentUser.mtbankLevel;
+    currentUser.mtbankExp += amount;
+    var leveledUp = false;
+    
+    while (currentUser.mtbankExp >= currentUser.mtbankExpToNext && currentUser.mtbankLevel < 3) {
+      currentUser.mtbankExp -= currentUser.mtbankExpToNext;
+      currentUser.mtbankLevel++;
+      currentUser.mtbankExpToNext = Math.floor(currentUser.mtbankExpToNext * 1.5);
+      leveledUp = true;
+      showGameToast(`🏆 МТБанк повышен до ${currentUser.mtbankLevel} уровня! Открыты новые бизнесы!`);
+    }
+    
+    var users = loadAllUsers();
+    users[currentUser.id] = currentUser;
+    saveAllUsers(users);
+    
+    updateMtbankUI();
+    
+    if (leveledUp) {
+      renderGrid();
+    }
+    
+    if (source) {
+      console.log(`➕ Добавлено ${amount} опыта МТБанка от: ${source}`);
+    }
+    
+    return leveledUp;
+  }
+
+  function updateMtbankUI() {
+    var currentUser = getCurrentUser();
+    if (!currentUser) return;
+    
+    var levelSpan = document.getElementById("mtbank-level");
+    var expSpan = document.getElementById("mtbank-exp");
+    var progressBar = document.getElementById("mtbank-progress");
+    
+    if (levelSpan) levelSpan.textContent = currentUser.mtbankLevel || 1;
+    if (expSpan) expSpan.textContent = `${currentUser.mtbankExp || 0} / ${currentUser.mtbankExpToNext || 100}`;
+    if (progressBar) {
+      var percent = ((currentUser.mtbankExp || 0) / (currentUser.mtbankExpToNext || 100)) * 100;
+      progressBar.style.width = percent + "%";
+    }
+  }
+
   // ========== ЗАДАНИЯ ==========
   var TASKS_KEY = "rr_tasks_";
 
   var TASKS_LIST = [
-    // ========== РАЗОВЫЕ ЗАДАНИЯ (прокачка бизнесов до 3 уровня) ==========
-    { id: "upgrade_coffee", title: "Прокачай кофейню", desc: "Улучшите кофейню до 3 уровня", type: "upgrade_building", buildingType: "coffee", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, category: "once" },
-    { id: "upgrade_flowershop", title: "Прокачай цветочный магазин", desc: "Улучшите цветочный магазин до 3 уровня", type: "upgrade_building", buildingType: "flowershop", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, category: "once" },
-    { id: "upgrade_minimarket", title: "Прокачай мини-маркет", desc: "Улучшите мини-маркет до 3 уровня", type: "upgrade_building", buildingType: "minimarket", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, category: "once" },
-    { id: "upgrade_foodtruck", title: "Прокачай фудтрак", desc: "Улучшите фудтрак до 3 уровня", type: "upgrade_building", buildingType: "foodtruck", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, category: "once" },
-    { id: "upgrade_icecream", title: "Прокачай киоск мороженого", desc: "Улучшите киоск мороженого до 3 уровня", type: "upgrade_building", buildingType: "icecream", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, category: "once" },
-    { id: "upgrade_restaurant", title: "Прокачай ресторан", desc: "Улучшите ресторан до 3 уровня", type: "upgrade_building", buildingType: "restaurant", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, category: "once" },
-    { id: "upgrade_shop", title: "Прокачай магазин", desc: "Улучшите магазин до 3 уровня", type: "upgrade_building", buildingType: "shop", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, category: "once" },
-    { id: "upgrade_autoservice", title: "Прокачай автосервис", desc: "Улучшите автосервис до 3 уровня", type: "upgrade_building", buildingType: "autoservice", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, category: "once" },
-    { id: "upgrade_itcompany", title: "Прокачай IT компанию", desc: "Улучшите IT компанию до 3 уровня", type: "upgrade_building", buildingType: "itcompany", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, category: "once" },
-    { id: "upgrade_gasstation", title: "Прокачай заправку", desc: "Улучшите заправку до 3 уровня", type: "upgrade_building", buildingType: "gasstation", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, category: "once" },
-    { id: "upgrade_businesspark", title: "Прокачай бизнес-парк", desc: "Улучшите бизнес-парк до 3 уровня", type: "upgrade_building", buildingType: "businesspark", requiredLevel: 3, rewardSkill: 150, rewardToken: 150, category: "once" },
-    { id: "upgrade_cinema", title: "Прокачай кинотеатр", desc: "Улучшите кинотеатр до 3 уровня", type: "upgrade_building", buildingType: "cinema", requiredLevel: 3, rewardSkill: 150, rewardToken: 150, category: "once" },
-    { id: "upgrade_construction", title: "Прокачай стройкомпанию", desc: "Улучшите стройкомпанию до 3 уровня", type: "upgrade_building", buildingType: "construction", requiredLevel: 3, rewardSkill: 150, rewardToken: 150, category: "once" },
-    { id: "upgrade_warehouse", title: "Прокачай склад", desc: "Улучшите склад до 3 уровня", type: "upgrade_building", buildingType: "warehouse", requiredLevel: 3, rewardSkill: 150, rewardToken: 150, category: "once" },
-    { id: "upgrade_mall", title: "Прокачай торговый центр", desc: "Улучшите торговый центр до 3 уровня", type: "upgrade_building", buildingType: "mall", requiredLevel: 3, rewardSkill: 150, rewardToken: 150, category: "once" },
+    { id: "upgrade_coffee", title: "Прокачай кофейню", desc: "Улучшите кофейню до 3 уровня", type: "upgrade_building", buildingType: "coffee", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, rewardExp: 15, category: "once" },
+    { id: "upgrade_flowershop", title: "Прокачай цветочный магазин", desc: "Улучшите цветочный магазин до 3 уровня", type: "upgrade_building", buildingType: "flowershop", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, rewardExp: 15, category: "once" },
+    { id: "upgrade_minimarket", title: "Прокачай мини-маркет", desc: "Улучшите мини-маркет до 3 уровня", type: "upgrade_building", buildingType: "minimarket", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, rewardExp: 15, category: "once" },
+    { id: "upgrade_foodtruck", title: "Прокачай фудтрак", desc: "Улучшите фудтрак до 3 уровня", type: "upgrade_building", buildingType: "foodtruck", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, rewardExp: 15, category: "once" },
+    { id: "upgrade_icecream", title: "Прокачай киоск мороженого", desc: "Улучшите киоск мороженого до 3 уровня", type: "upgrade_building", buildingType: "icecream", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, rewardExp: 15, category: "once" },
+    { id: "upgrade_restaurant", title: "Прокачай ресторан", desc: "Улучшите ресторан до 3 уровня", type: "upgrade_building", buildingType: "restaurant", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, rewardExp: 15, category: "once" },
+    { id: "upgrade_shop", title: "Прокачай магазин", desc: "Улучшите магазин до 3 уровня", type: "upgrade_building", buildingType: "shop", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, rewardExp: 15, category: "once" },
+    { id: "upgrade_autoservice", title: "Прокачай автосервис", desc: "Улучшите автосервис до 3 уровня", type: "upgrade_building", buildingType: "autoservice", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, rewardExp: 15, category: "once" },
+    { id: "upgrade_itcompany", title: "Прокачай IT компанию", desc: "Улучшите IT компанию до 3 уровня", type: "upgrade_building", buildingType: "itcompany", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, rewardExp: 15, category: "once" },
+    { id: "upgrade_gasstation", title: "Прокачай заправку", desc: "Улучшите заправку до 3 уровня", type: "upgrade_building", buildingType: "gasstation", requiredLevel: 3, rewardSkill: 100, rewardToken: 100, rewardExp: 15, category: "once" },
+    { id: "upgrade_businesspark", title: "Прокачай бизнес-парк", desc: "Улучшите бизнес-парк до 3 уровня", type: "upgrade_building", buildingType: "businesspark", requiredLevel: 3, rewardSkill: 150, rewardToken: 150, rewardExp: 25, category: "once" },
+    { id: "upgrade_cinema", title: "Прокачай кинотеатр", desc: "Улучшите кинотеатр до 3 уровня", type: "upgrade_building", buildingType: "cinema", requiredLevel: 3, rewardSkill: 150, rewardToken: 150, rewardExp: 25, category: "once" },
+    { id: "upgrade_construction", title: "Прокачай стройкомпанию", desc: "Улучшите стройкомпанию до 3 уровня", type: "upgrade_building", buildingType: "construction", requiredLevel: 3, rewardSkill: 150, rewardToken: 150, rewardExp: 25, category: "once" },
+    { id: "upgrade_warehouse", title: "Прокачай склад", desc: "Улучшите склад до 3 уровня", type: "upgrade_building", buildingType: "warehouse", requiredLevel: 3, rewardSkill: 150, rewardToken: 150, rewardExp: 25, category: "once" },
+    { id: "upgrade_mall", title: "Прокачай торговый центр", desc: "Улучшите торговый центр до 3 уровня", type: "upgrade_building", buildingType: "mall", requiredLevel: 3, rewardSkill: 150, rewardToken: 150, rewardExp: 25, category: "once" },
     
-    // ========== ЕЖЕМЕСЯЧНЫЕ ЗАДАНИЯ (траты по карте МТБанка) ==========
-    { id: "card_spending_500_1000", title: "Траты по карте МТБанка", desc: "Потратьте от 500 до 1000 рублей за месяц", type: "card_spending", minAmount: 500, maxAmount: 1000, rewardSkill: 200, rewardToken: 0, category: "monthly" },
-    { id: "card_spending_1000_1500", title: "Траты по карте МТБанка", desc: "Потратьте от 1000 до 1500 рублей за месяц", type: "card_spending", minAmount: 1000.01, maxAmount: 1500, rewardSkill: 300, rewardToken: 0, category: "monthly" },
-    { id: "card_spending_1500_2000", title: "Траты по карте МТБанка", desc: "Потратьте от 1500 до 2000 рублей за месяц", type: "card_spending", minAmount: 1500.01, maxAmount: 2000, rewardSkill: 400, rewardToken: 0, category: "monthly" },
-    { id: "card_spending_2000_plus", title: "Траты по карте МТБанка", desc: "Потратьте от 2000 рублей и более за месяц", type: "card_spending", minAmount: 2000.01, maxAmount: Infinity, rewardSkill: 500, rewardToken: 100, category: "monthly" }
+    { id: "card_spending_500_1000", title: "Траты по карте МТБанка", desc: "Потратьте от 500 до 1000 рублей за месяц", type: "card_spending", minAmount: 500, maxAmount: 1000, rewardSkill: 200, rewardToken: 0, rewardExp: 20, category: "monthly" },
+    { id: "card_spending_1000_1500", title: "Траты по карте МТБанка", desc: "Потратьте от 1000 до 1500 рублей за месяц", type: "card_spending", minAmount: 1000.01, maxAmount: 1500, rewardSkill: 300, rewardToken: 0, rewardExp: 30, category: "monthly" },
+    { id: "card_spending_1500_2000", title: "Траты по карте МТБанка", desc: "Потратьте от 1500 до 2000 рублей за месяц", type: "card_spending", minAmount: 1500.01, maxAmount: 2000, rewardSkill: 400, rewardToken: 0, rewardExp: 40, category: "monthly" },
+    { id: "card_spending_2000_plus", title: "Траты по карте МТБанка", desc: "Потратьте от 2000 рублей и более за месяц", type: "card_spending", minAmount: 2000.01, maxAmount: Infinity, rewardSkill: 500, rewardToken: 100, rewardExp: 50, category: "monthly" }
   ];
 
   function getTasksData() {
@@ -458,7 +568,7 @@
     renderTasksList();
   }
 
-  function claimTaskReward(taskId, rewardSkill, rewardToken) {
+  function claimTaskReward(taskId, rewardSkill, rewardToken, rewardExp) {
     var currentUser = getCurrentUser();
     if (!currentUser) return false;
     
@@ -491,7 +601,12 @@
     updateDisplays();
     renderTasksList();
     
-    showGameToast(`🎉 Получена награда: ${rewardSkill} ⭐ и ${rewardToken} 💰!`);
+    if (rewardExp) {
+      addMtbankExp(rewardExp, "task_reward");
+      updateMtbankUI();
+    }
+    
+    showGameToast(`🎉 Получена награда: ${rewardSkill} ⭐, ${rewardToken} 💰 и ${rewardExp} опыта!`);
     return true;
   }
 
@@ -504,7 +619,7 @@
     
     document.getElementById("task-modal-title").textContent = task.title;
     document.getElementById("task-modal-desc").textContent = task.desc;
-    document.getElementById("task-modal-reward").innerHTML = `⭐ ${task.rewardSkill} очков прокачки ${task.rewardToken > 0 ? `+ 💰 ${task.rewardToken} токенов` : ''}`;
+    document.getElementById("task-modal-reward").innerHTML = `⭐ ${task.rewardSkill} очков прокачки ${task.rewardToken > 0 ? `+ 💰 ${task.rewardToken} токенов` : ''}<br>✨ +${task.rewardExp} опыта МТБанка`;
     
     var inputContainer = document.getElementById("task-modal-input-container");
     var inputField = document.getElementById("task-modal-input");
@@ -525,7 +640,7 @@
         }
         
         if (amount >= task.minAmount && amount <= task.maxAmount) {
-          claimTaskReward(task.id, task.rewardSkill, task.rewardToken);
+          claimTaskReward(task.id, task.rewardSkill, task.rewardToken, task.rewardExp);
           closeTaskModal();
         } else {
           showGameToast(`❌ Сумма должна быть от ${task.minAmount} до ${task.maxAmount === Infinity ? '∞' : task.maxAmount} рублей!`);
@@ -535,7 +650,7 @@
       inputContainer.style.display = "none";
       var confirmBtn = document.getElementById("task-modal-confirm");
       confirmBtn.onclick = function() {
-        claimTaskReward(task.id, task.rewardSkill, task.rewardToken);
+        claimTaskReward(task.id, task.rewardSkill, task.rewardToken, task.rewardExp);
         closeTaskModal();
       };
     }
@@ -651,6 +766,7 @@
           <div class="task-reward">
             <span>⭐ ${task.rewardSkill}</span>
             ${task.rewardToken > 0 ? `<span>💰 ${task.rewardToken}</span>` : ''}
+            <span>✨ +${task.rewardExp}</span>
           </div>
         </div>
         <div class="task-status ${statusClass}">${statusText}</div>
@@ -745,9 +861,14 @@
   function getRewardForDay(day) {
     var baseSkill = 10;
     var baseToken = 10;
+    var baseExp = 5;
     var maxDay = Math.min(day, 12);
     var multiplier = Math.pow(1.2, maxDay - 1);
-    return { skill: Math.floor(baseSkill * multiplier), token: Math.floor(baseToken * multiplier) };
+    return { 
+      skill: Math.floor(baseSkill * multiplier), 
+      token: Math.floor(baseToken * multiplier),
+      exp: Math.floor(baseExp * multiplier)
+    };
   }
 
   function claimDayReward(day) {
@@ -798,7 +919,10 @@
     renderCalendarGrid();
     updateStreakDisplay();
     
-    showGameToast(`🎉 Получено: ${reward.skill} ⭐ и ${reward.token} 💰!`);
+    addMtbankExp(reward.exp, "calendar");
+    updateMtbankUI();
+    
+    showGameToast(`🎉 Получено: ${reward.skill} ⭐, ${reward.token} 💰 и ${reward.exp} опыта!`);
     return true;
   }
 
@@ -837,6 +961,7 @@
         <div class="calendar-day__reward">
           <span class="reward-skill">⭐ ${reward.skill}</span>
           <span class="reward-token">💰 ${reward.token}</span>
+          <span class="reward-exp">✨ ${reward.exp}</span>
         </div>
         ${isClaimed ? '<div class="claimed-badge">✓</div>' : ''}
       `;
@@ -966,28 +1091,7 @@
     if (totalIncomeSpan) totalIncomeSpan.textContent = totalHourly;
     
     syncBalancesToDom();
-  }
-
-  function getMtbankLevel() {
-    var currentUser = getCurrentUser();
-    return currentUser?.mtbankLevel || 1;
-  }
-
-  function addMtbankExp(amount) {
-    var currentUser = getCurrentUser();
-    if (!currentUser) return;
-    
-    currentUser.mtbankExp = (currentUser.mtbankExp || 0) + amount;
-    while (currentUser.mtbankExp >= (currentUser.mtbankExpToNext || 100)) {
-      currentUser.mtbankExp -= (currentUser.mtbankExpToNext || 100);
-      currentUser.mtbankLevel = (currentUser.mtbankLevel || 1) + 1;
-      currentUser.mtbankExpToNext = Math.floor((currentUser.mtbankExpToNext || 100) * 1.5);
-      showGameToast(`🏦 МТБанк повышен до ${currentUser.mtbankLevel} уровня!`);
-    }
-    
-    var users = loadAllUsers();
-    users[currentUser.id] = currentUser;
-    saveAllUsers(users);
+    updateMtbankUI();
   }
 
   function getBuildingSpriteHTML(type, level) {
@@ -1039,7 +1143,7 @@
     ` : '';
     
     const bankLevelHTML = building && building.type === "mtbank" ? `
-      <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.5);border-radius:12px;padding:2px 6px;z-index:15;white-space:nowrap;">
+      <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);border-radius:12px;padding:2px 6px;z-index:15;white-space:nowrap;">
         <span style="font-size:8px;font-weight:700;color:#FFD700;">🏦 Lv.${building.level}</span>
       </div>
     ` : '';
@@ -1124,24 +1228,29 @@
     container.innerHTML = "";
     
     var categories = {
-      1: { name: "1 уровень МТБанка", buildings: BUILDING_KEYS.slice(0, 5) },
-      2: { name: "2 уровень МТБанка", buildings: BUILDING_KEYS.slice(5, 10) },
-      3: { name: "3 уровень МТБанка", buildings: BUILDING_KEYS.slice(10, 15) }
+      1: { name: "⭐ Стартовые (1 ур. МТБанка)", buildings: BUILDING_KEYS.slice(0, 5) },
+      2: { name: "🏢 Средние (2 ур. МТБанка)", buildings: BUILDING_KEYS.slice(5, 10) },
+      3: { name: "🏦 Элитные (3 ур. МТБанка)", buildings: BUILDING_KEYS.slice(10, 15) }
     };
     
     var currentLevel = getMtbankLevel();
     
     for (var cat in categories) {
+      var catNum = parseInt(cat);
       var header = document.createElement("div");
       header.className = "build-category-header";
-      header.innerHTML = `<span class="build-category-title">${categories[cat].name}</span>`;
+      if (catNum <= currentLevel) {
+        header.innerHTML = `<span class="build-category-title">✅ ${categories[cat].name}</span>`;
+      } else {
+        header.innerHTML = `<span class="build-category-title locked">🔒 ${categories[cat].name}</span>`;
+      }
       container.appendChild(header);
       
       for (var i = 0; i < categories[cat].buildings.length; i++) {
         var key = categories[cat].buildings[i];
         var type = BUILDING_TYPES[key];
         var price = Math.floor(type.cost * buildingPriceMultiplier);
-        var isUnlocked = parseInt(cat) <= currentLevel;
+        var isUnlocked = catNum <= currentLevel;
         
         var option = document.createElement("div");
         option.className = "build-option" + (isUnlocked ? "" : " build-option--locked");
@@ -1149,7 +1258,7 @@
           <div class="build-option__icon"><img src="${SPRITE_PATH}${type.sprite}" style="width:35px;height:35px;object-fit:contain;" onerror="this.style.display='none';this.parentElement.textContent='${type.icon}'"></div>
           <div class="build-option__name">${type.name}</div>
           <div class="build-option__cost">⭐ ${price}</div>
-          ${!isUnlocked ? '<div class="build-option__locked">🔒 Ур. МТБанка ' + cat + '</div>' : ''}
+          ${!isUnlocked ? '<div class="build-option__locked">🔒 Требуется ' + catNum + ' уровень МТБанка</div>' : ''}
         `;
         
         if (isUnlocked) {
@@ -1204,10 +1313,13 @@
     updateDisplays();
     renderGrid();
     syncBalancesToDom();
-    addMtbankExp(5);
+    
+    addMtbankExp(5, "build_building");
+    updateMtbankUI();
+    
     checkAllTasksCompletion();
     
-    showGameToast("✅ Построено: " + BUILDING_TYPES[type].name + " за " + cost + " ⭐!");
+    showGameToast("✅ Построено: " + BUILDING_TYPES[type].name + " за " + cost + " ⭐! +5 опыта МТБанка");
     closeBuildModal();
     return true;
   }
@@ -1323,10 +1435,14 @@
     updateDisplays();
     renderGrid();
     syncBalancesToDom();
-    addMtbankExp(10 * building.level);
+    
+    var expGain = 10 * building.level;
+    addMtbankExp(expGain, "upgrade_building");
+    updateMtbankUI();
+    
     checkAllTasksCompletion();
     
-    showGameToast("⬆️ " + typeData.name + " улучшен до " + building.level + " уровня!");
+    showGameToast("⬆️ " + typeData.name + " улучшен до " + building.level + " уровня! +" + expGain + " опыта МТБанка");
     closeInfoModal();
     return true;
   }
@@ -1403,9 +1519,12 @@
     }
   }
 
+  // ========== УПРАВЛЕНИЕ КАМЕРОЙ (ПОДДЕРЖКА ТЕЛЕФОНА) ==========
   function setupCameraControls() {
     const gameArea = document.querySelector('.city-game-area');
     if (!gameArea) return;
+    
+    cameraZoom = 1.3;
     
     gameArea.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -1414,6 +1533,7 @@
       updateCameraTransform();
     }, { passive: false });
     
+    // Управление мышью
     gameArea.addEventListener('mousedown', (e) => {
       if (e.target.closest('.city-tile') || e.target.closest('button')) return;
       isDragging = true;
@@ -1440,6 +1560,75 @@
       isDragging = false; 
       if (gameArea) gameArea.style.cursor = 'grab';
       setTimeout(() => { hasMoved = false; }, 50);
+    });
+    
+    // Управление пальцем (телефон)
+    let touchStartDistance = 0;
+    let touchStartZoom = 1.3;
+    
+    gameArea.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      
+      if (e.target.closest('.city-tile') || e.target.closest('button')) {
+        isDragging = false;
+        return;
+      }
+      
+      if (e.touches.length === 1) {
+        isDragging = true;
+        hasMoved = false;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        dragCameraStartX = cameraX;
+        dragCameraStartY = cameraY;
+      } else if (e.touches.length === 2) {
+        isDragging = false;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        touchStartDistance = Math.sqrt(dx * dx + dy * dy);
+        touchStartZoom = cameraZoom;
+      }
+    }, { passive: false });
+    
+    gameArea.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      
+      if (e.touches.length === 1 && isDragging) {
+        const dx = e.touches[0].clientX - dragStartX;
+        const dy = e.touches[0].clientY - dragStartY;
+        
+        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+          hasMoved = true;
+        }
+        
+        cameraX = dragCameraStartX + dx;
+        cameraY = dragCameraStartY + dy;
+        updateCameraTransform();
+      } else if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (touchStartDistance > 0) {
+          const scale = distance / touchStartDistance;
+          cameraZoom = Math.min(2.2, Math.max(0.9, touchStartZoom * scale));
+          updateCameraTransform();
+        }
+      }
+    }, { passive: false });
+    
+    gameArea.addEventListener('touchend', (e) => {
+      setTimeout(() => {
+        isDragging = false;
+        hasMoved = false;
+      }, 50);
+      touchStartDistance = 0;
+    });
+    
+    gameArea.addEventListener('touchcancel', (e) => {
+      isDragging = false;
+      hasMoved = false;
+      touchStartDistance = 0;
     });
     
     gameArea.style.cursor = 'grab';
@@ -1509,6 +1698,12 @@
     var panel = document.getElementById("panel-game");
     if (!panel) return;
     
+    var currentUser = getCurrentUser();
+    var mtbankLevel = currentUser?.mtbankLevel || 1;
+    var mtbankExp = currentUser?.mtbankExp || 0;
+    var mtbankExpToNext = currentUser?.mtbankExpToNext || 100;
+    var expPercent = (mtbankExp / mtbankExpToNext) * 100;
+    
     panel.innerHTML = `
       <div class="game-container">
         <div class="game-header">
@@ -1530,6 +1725,22 @@
           </div>
         </div>
         
+        <div class="mtbank-status" style="background:linear-gradient(145deg,#f5e6a0,#e6d5a0); border-radius:16px; padding:12px; margin:12px 0; text-align:center;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:24px;">🏦</span>
+              <span style="font-weight:bold;">МТБанк Ур.${mtbankLevel}</span>
+            </div>
+            <div style="flex:1; min-width:150px;">
+              <div style="background:rgba(0,0,0,0.2); border-radius:10px; height:8px; overflow:hidden;">
+                <div id="mtbank-progress" style="width:${expPercent}%; height:100%; background:linear-gradient(90deg,#ffd700,#ff9800); border-radius:10px;"></div>
+              </div>
+              <div style="font-size:11px; margin-top:4px;" id="mtbank-exp">${mtbankExp} / ${mtbankExpToNext} опыта</div>
+            </div>
+            <div style="font-size:12px; opacity:0.8;">✨ +опыт за действия</div>
+          </div>
+        </div>
+        
         <div id="mode-status" style="text-align:center; font-size:14px; font-weight:bold; margin:8px 0; padding:8px; border-radius:12px; background:#fff3e0; color:#e65100;">
           🔨 РЕЖИМ СТРОИТЕЛЬСТВА <span style="background:#ff9800; padding:2px 8px; border-radius:20px; margin-left:8px; color:white;">Активен</span>
         </div>
@@ -1541,7 +1752,7 @@
           </button>
         </div>
         
-        <div class="city-game-area" style="width:100%; min-height:450px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#87CEEB; border-radius:20px; margin-bottom:16px; box-shadow:inset 0 0 50px rgba(0,0,0,0.1);">
+        <div class="city-game-area" style="width:100%; min-height:450px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#87CEEB; border-radius:20px; margin-bottom:16px; box-shadow:inset 0 0 50px rgba(0,0,0,0.1); touch-action:none;">
           <div id="city-iso" style="position:relative;"></div>
         </div>
         
@@ -1603,6 +1814,7 @@
     checkAllTasksCompletion();
     renderCalendarGrid();
     updateStreakDisplay();
+    updateMtbankUI();
   }
 
   // ========== ИНИЦИАЛИЗАЦИЯ ==========
@@ -1731,10 +1943,26 @@
       });
     }
     
+    // Принудительная привязка кнопки добавления очков
+    var addSkillBtn = document.getElementById("btn-add-skill");
+    if (addSkillBtn) {
+      var newAddSkillBtn = addSkillBtn.cloneNode(true);
+      addSkillBtn.parentNode.replaceChild(newAddSkillBtn, addSkillBtn);
+      
+      newAddSkillBtn.addEventListener("click", function() {
+        var amountInput = document.getElementById("skill-add-amount");
+        var amount = parseInt(amountInput.value, 10);
+        if (isNaN(amount) || amount <= 0) {
+          amount = 100;
+          if (amountInput) amountInput.value = 100;
+        }
+        addSkillPoints(amount);
+      });
+    }
+    
     initTasksTabs();
     window.initCityGame = initCityGame;
     
-    // Инициализация модального окна помощи
     var helpModal = document.getElementById("help-modal");
     var helpModalClose = document.getElementById("help-modal-close");
     var helpModalOverlay = document.querySelector("#help-modal .help-modal__overlay");
