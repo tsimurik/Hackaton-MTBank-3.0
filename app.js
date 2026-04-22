@@ -51,13 +51,61 @@ var MAX_ACCUMULATION_HOURS = 24;
   }
 
   function logout() {
-    localStorage.removeItem(USER_KEY);
-    showRegisterScreen();
-    var loginIdInput = document.getElementById("login-id");
-    var loginNicknameInput = document.getElementById("login-nickname");
-    if (loginIdInput) loginIdInput.value = "";
-    if (loginNicknameInput) loginNicknameInput.value = "";
+  // Очищаем текущего пользователя
+  localStorage.removeItem(USER_KEY);
+  
+  // Сбрасываем все панели
+  var panels = document.querySelectorAll(".panel");
+  for (var i = 0; i < panels.length; i++) {
+    panels[i].classList.remove("is-active");
   }
+  
+  // Скрываем нижнюю навигацию
+  var nav = document.getElementById("bottom-nav");
+  if (nav) {
+    nav.style.display = "none";
+  }
+  
+  // Принудительно скрываем экран приложения
+  var app = document.getElementById("screen-app");
+  if (app) {
+    app.setAttribute("hidden", "");
+    app.classList.add("is-hidden");
+  }
+  
+  // Скрываем экран входа
+  var login = document.getElementById("screen-login");
+  if (login) {
+    login.setAttribute("hidden", "");
+    login.classList.add("is-hidden");
+  }
+  
+  // Показываем ТОЛЬКО экран регистрации
+  var reg = document.getElementById("screen-register");
+  if (reg) {
+    reg.removeAttribute("hidden");
+    reg.classList.remove("is-hidden");
+    refreshRegistrationPreview();
+  }
+  
+  // Очищаем поля ввода
+  var loginIdInput = document.getElementById("login-id");
+  var loginNicknameInput = document.getElementById("login-nickname");
+  if (loginIdInput) loginIdInput.value = "";
+  if (loginNicknameInput) loginNicknameInput.value = "";
+  
+  // Очищаем содержимое panel-game чтобы не оставалось артефактов
+  var panelGame = document.getElementById("panel-game");
+  if (panelGame) {
+    panelGame.innerHTML = '';
+  }
+  
+  // Сбрасываем балансы
+  balanceSkillPoints = 0;
+  balanceMtBanks = 0;
+  
+  console.log("Вышли из аккаунта");
+}
 
   function normalizeNickname(n) {
     return String(n).trim().toLowerCase();
@@ -100,24 +148,29 @@ var MAX_ACCUMULATION_HOURS = 24;
     if (typeof updateDisplays === 'function') updateDisplays();
   }
 
-  function hideRegisterShowApp() {
-    var reg = document.getElementById("screen-register");
-    var login = document.getElementById("screen-login");
-    var app = document.getElementById("screen-app");
-    
-    if (reg) {
-      reg.setAttribute("hidden", "");
-      reg.classList.add("is-hidden");
-    }
-    if (login) {
-      login.setAttribute("hidden", "");
-      login.classList.add("is-hidden");
-    }
-    if (app) {
-      app.removeAttribute("hidden");
-      app.classList.remove("is-hidden");
-    }
+function hideRegisterShowApp() {
+  var reg = document.getElementById("screen-register");
+  var login = document.getElementById("screen-login");
+  var app = document.getElementById("screen-app");
+  var nav = document.getElementById("bottom-nav");
+  
+  if (reg) {
+    reg.setAttribute("hidden", "");
+    reg.classList.add("is-hidden");
   }
+  if (login) {
+    login.setAttribute("hidden", "");
+    login.classList.add("is-hidden");
+  }
+  if (app) {
+    app.removeAttribute("hidden");
+    app.classList.remove("is-hidden");
+  }
+  // Показываем навигацию только в приложении
+  if (nav) {
+    nav.style.display = "flex";
+  }
+}
 
   function showRegisterScreen() {
     var reg = document.getElementById("screen-register");
