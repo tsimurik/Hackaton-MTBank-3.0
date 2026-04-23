@@ -477,9 +477,11 @@ a.shop-item {
 
 .bottom-nav {
   position: fixed;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   bottom: 0;
+  width: 100%;
+  max-width: 480px;
   display: flex;
   justify-content: space-around;
   align-items: stretch;
@@ -3563,7 +3565,12 @@ button:active, .city-bar-btn:active, .city-control-btn:active, .build-option:act
     display: block;
     background: var(--bg-page);
   }
-  
+    .bottom-nav {
+    max-width: 100%;
+    left: 0;
+    right: 0;
+    transform: none;
+  }
   #screen-register,
   #screen-login,
   #screen-app,
@@ -3928,41 +3935,65 @@ html, body {
   height: 100% !important;
   -webkit-overflow-scrolling: touch;
 }
-/* ===== БАТАРЕЙКА (МИНИМАЛИСТИЧНЫЙ СТИЛЬ) ===== */
-.battery-container {
-  display: flex;
-  align-items: center;
-  gap: 2px;
+
+/* Скрываем нижнюю навигацию на экранах регистрации и входа */
+#screen-register .bottom-nav,
+#screen-login .bottom-nav,
+.screen--center .bottom-nav {
+  display: none !important;
+  visibility: hidden !important;
 }
 
-.battery-body {
-  width: 22px;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.3);
-  border: 1px solid white;
-  border-radius: 3px;
-  position: relative;
-  overflow: hidden;
+/* Убеждаемся что на основном экране навигация видна */
+#screen-app .bottom-nav {
+  display: flex !important;
+  visibility: visible !important;
 }
 
-.battery-level {
-  height: 100%;
-  width: 100%;
-  background: #ffffff;
-  border-radius: 2px;
-  transition: width 0.3s ease;
+/* Фикс для экранов регистрации/входа на ПК */
+#screen-register,
+#screen-login {
+  max-width: 480px !important;
+  margin: 0 auto !important;
 }
 
-.battery-cap {
-  width: 3px;
-  height: 5px;
-  background: white;
-  border-radius: 1px;
+/* Скрываем навигацию на экранах регистрации/входа */
+#screen-register .bottom-nav,
+#screen-login .bottom-nav,
+#screen-register ~ .bottom-nav,
+#screen-login ~ .bottom-nav,
+.screen--center .bottom-nav,
+.screen--center ~ .bottom-nav {
+  display: none !important;
 }
 
-.battery-charges {
-  font-size: 9px;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+/* Убеждаемся что навигация скрыта глобально когда приложение скрыто */
+#screen-app[hidden] ~ .bottom-nav,
+#screen-app.is-hidden ~ .bottom-nav {
+  display: none !important;
+}
+
+/* Гарантированно скрываем экран приложения и все его элементы при выходе */
+#screen-app[hidden],
+#screen-app.is-hidden,
+#screen-app[hidden] *,
+#screen-app.is-hidden * {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Экран регистрации всегда виден только один */
+#screen-register {
+  z-index: 100;
+}
+
+#screen-login,
+#screen-app {
+  z-index: 1;
+}
+
+/* Убираем возможные артефакты */
+#screen-app[hidden] .panel,
+#screen-app.is-hidden .panel {
+  display: none !important;
 }

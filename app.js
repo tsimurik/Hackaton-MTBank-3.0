@@ -51,13 +51,61 @@ var MAX_ACCUMULATION_HOURS = 24;
   }
 
   function logout() {
-    localStorage.removeItem(USER_KEY);
-    showRegisterScreen();
-    var loginIdInput = document.getElementById("login-id");
-    var loginNicknameInput = document.getElementById("login-nickname");
-    if (loginIdInput) loginIdInput.value = "";
-    if (loginNicknameInput) loginNicknameInput.value = "";
+  // Очищаем текущего пользователя
+  localStorage.removeItem(USER_KEY);
+  
+  // Сбрасываем все панели
+  var panels = document.querySelectorAll(".panel");
+  for (var i = 0; i < panels.length; i++) {
+    panels[i].classList.remove("is-active");
   }
+  
+  // Скрываем нижнюю навигацию
+  var nav = document.getElementById("bottom-nav");
+  if (nav) {
+    nav.style.display = "none";
+  }
+  
+  // Принудительно скрываем экран приложения
+  var app = document.getElementById("screen-app");
+  if (app) {
+    app.setAttribute("hidden", "");
+    app.classList.add("is-hidden");
+  }
+  
+  // Скрываем экран входа
+  var login = document.getElementById("screen-login");
+  if (login) {
+    login.setAttribute("hidden", "");
+    login.classList.add("is-hidden");
+  }
+  
+  // Показываем ТОЛЬКО экран регистрации
+  var reg = document.getElementById("screen-register");
+  if (reg) {
+    reg.removeAttribute("hidden");
+    reg.classList.remove("is-hidden");
+    refreshRegistrationPreview();
+  }
+  
+  // Очищаем поля ввода
+  var loginIdInput = document.getElementById("login-id");
+  var loginNicknameInput = document.getElementById("login-nickname");
+  if (loginIdInput) loginIdInput.value = "";
+  if (loginNicknameInput) loginNicknameInput.value = "";
+  
+  // Очищаем содержимое panel-game чтобы не оставалось артефактов
+  var panelGame = document.getElementById("panel-game");
+  if (panelGame) {
+    panelGame.innerHTML = '';
+  }
+  
+  // Сбрасываем балансы
+  balanceSkillPoints = 0;
+  balanceMtBanks = 0;
+  
+  console.log("Вышли из аккаунта");
+}
 
   function normalizeNickname(n) {
     return String(n).trim().toLowerCase();
@@ -100,24 +148,29 @@ var MAX_ACCUMULATION_HOURS = 24;
     if (typeof updateDisplays === 'function') updateDisplays();
   }
 
-  function hideRegisterShowApp() {
-    var reg = document.getElementById("screen-register");
-    var login = document.getElementById("screen-login");
-    var app = document.getElementById("screen-app");
-    
-    if (reg) {
-      reg.setAttribute("hidden", "");
-      reg.classList.add("is-hidden");
-    }
-    if (login) {
-      login.setAttribute("hidden", "");
-      login.classList.add("is-hidden");
-    }
-    if (app) {
-      app.removeAttribute("hidden");
-      app.classList.remove("is-hidden");
-    }
+function hideRegisterShowApp() {
+  var reg = document.getElementById("screen-register");
+  var login = document.getElementById("screen-login");
+  var app = document.getElementById("screen-app");
+  var nav = document.getElementById("bottom-nav");
+  
+  if (reg) {
+    reg.setAttribute("hidden", "");
+    reg.classList.add("is-hidden");
   }
+  if (login) {
+    login.setAttribute("hidden", "");
+    login.classList.add("is-hidden");
+  }
+  if (app) {
+    app.removeAttribute("hidden");
+    app.classList.remove("is-hidden");
+  }
+  // Показываем навигацию только в приложении
+  if (nav) {
+    nav.style.display = "flex";
+  }
+}
 
   function showRegisterScreen() {
     var reg = document.getElementById("screen-register");
@@ -482,15 +535,40 @@ function addMtbankExp(amount, source) {
   users[currentUser.id] = currentUser;
   saveAllUsers(users);
   
-  // Обновляем отображение
-  updateMtbankUI();
+  // Обновляем уровень в массиве buildings
+  if (typeof buildings !== 'undefined' && buildings[12] && buildings[12].type === "mtbank") {
+    buildings[12].level = currentUser.mtbankLevel;
+    if (typeof saveGameBuildings === 'function') {
+      var gameData = { buildings: buildings, lastUpdate: Date.now() };
+      saveGameBuildings(gameData);
+    }
+  }
   
-  if (leveledUp && typeof renderGrid === 'function') {
+  // 🔴 ПРИНУДИТЕЛЬНО обновляем элементы на странице
+  var levelSpan = document.getElementById("mtbank-level");
+  if (levelSpan) levelSpan.textContent = currentUser.mtbankLevel;
+  
+  var expSpan = document.getElementById("mtbank-exp");
+  if (expSpan) {
+    expSpan.textContent = currentUser.mtbankExp + " / " + currentUser.mtbankExpToNext + " опыта";
+  }
+  
+  var progressBar = document.getElementById("mtbank-progress");
+  if (progressBar) {
+    var percent = (currentUser.mtbankExp / currentUser.mtbankExpToNext) * 100;
+    progressBar.style.width = percent + "%";
+  }
+  
+  // Обновляем модальное окно если открыто
+  updateMtbankModalContent();
+  
+  // Перерисовываем поле для обновления уровня на ратуше
+  if (typeof renderGrid === 'function') {
     renderGrid();
   }
   
   if (source) {
-    console.log(`➕ Добавлено ${amount} опыта МТБанка от: ${source}, новый уровень: ${currentUser.mtbankLevel}`);
+    console.log(`➕ Добавлено ${amount} опыта МТБанка от: ${source}, новый уровень: ${currentUser.mtbankLevel}, опыт: ${currentUser.mtbankExp}/${currentUser.mtbankExpToNext}`);
   }
   
   return leveledUp;
@@ -505,7 +583,7 @@ function updateMtbankUI() {
   var expToNext = currentUser.mtbankExpToNext || 100;
   var percent = (exp / expToNext) * 100;
   
-  // Обновляем текстовые элементы в верхней панели
+  // Обновляем уровень в UI сверху
   var levelSpan = document.getElementById("mtbank-level");
   if (levelSpan) levelSpan.textContent = level;
   
@@ -515,15 +593,10 @@ function updateMtbankUI() {
   var progressBar = document.getElementById("mtbank-progress");
   if (progressBar) progressBar.style.width = percent + "%";
   
-  // Обновляем уровень в buildings массиве (для сохранения)
+  // 🔴 ВАЖНО: Обновляем уровень в массиве buildings
   if (typeof buildings !== 'undefined' && buildings[12] && buildings[12].type === "mtbank") {
     buildings[12].level = level;
-    if (typeof saveGameBuildings === 'function') {
-      saveGameBuildings({ buildings: buildings, lastUpdate: Date.now() });
-    }
   }
-  
-  console.log("🔄 Обновлён UI МТБанка: уровень", level);
 }
 
 function updateMtbankModalContent() {
@@ -1184,10 +1257,21 @@ function getBuildingDiscount() {
     updateDisplays();
     renderTasksList();
     
-    if (rewardExp) {
-      addMtbankExp(rewardExp, "task_reward");
-      updateMtbankUI();
-    }
+ if (rewardExp) {
+  addMtbankExp(rewardExp, "task_reward");
+  
+  // Принудительно обновить UI
+  setTimeout(function() {
+    var currentUser = getCurrentUser();
+    var levelSpan = document.getElementById("mtbank-level");
+    var expSpan = document.getElementById("mtbank-exp");
+    var progressBar = document.getElementById("mtbank-progress");
+    
+    if (levelSpan) levelSpan.textContent = currentUser.mtbankLevel;
+    if (expSpan) expSpan.textContent = currentUser.mtbankExp + " / " + currentUser.mtbankExpToNext + " опыта";
+    if (progressBar) progressBar.style.width = (currentUser.mtbankExp / currentUser.mtbankExpToNext * 100) + "%";
+  }, 100);
+}
     
     showGameToast(`🎉 Получена награда: ${rewardSkill} ⭐, ${rewardToken} 💰 и ${rewardExp} опыта!`);
     return true;
@@ -1503,6 +1587,16 @@ function getBuildingDiscount() {
     updateStreakDisplay();
     
     addMtbankExp(reward.exp, "calendar");
+    setTimeout(function() {
+  var levelSpan = document.getElementById("mtbank-level");
+  var expSpan = document.getElementById("mtbank-exp");
+  var progressBar = document.getElementById("mtbank-progress");
+  var currentUser = getCurrentUser();
+  
+  if (levelSpan) levelSpan.textContent = currentUser.mtbankLevel;
+  if (expSpan) expSpan.textContent = currentUser.mtbankExp + " / " + currentUser.mtbankExpToNext + " опыта";
+  if (progressBar) progressBar.style.width = (currentUser.mtbankExp / currentUser.mtbankExpToNext * 100) + "%";
+}, 100);
     updateMtbankUI();
     
     showGameToast(`🎉 Получено: ${reward.skill} ⭐, ${reward.token} 💰 и ${reward.exp} опыта!`);
@@ -1692,19 +1786,19 @@ function getMaxPendingIncome(building) {
     updateMtbankUI();
   }
 
-  function getBuildingSpriteHTML(type, level) {
-    const def = BUILDING_TYPES[type];
-    if (!def) return '';
-    
-    const isMainBank = (type === "mtbank");
-    
-    return `
-      <div style="position:absolute;bottom:${isMainBank ? '28px' : '22px'};left:50%;transform:translateX(-50%);width:${isMainBank ? '60px' : '50px'};height:${isMainBank ? '60px' : '50px'};display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;filter:drop-shadow(0 6px 4px rgba(0,0,0,0.25));z-index:10;">
-        <img src="${SPRITE_PATH}${def.sprite}" alt="${def.name}" style="width:100%;height:100%;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-        <div style="display:none;width:100%;height:100%;background:${def.bg};border-radius:12px;align-items:center;justify-content:center;font-size:28px;font-weight:bold;color:#333;">${def.icon}</div>
-      </div>
-    `;
-  }
+function getBuildingSpriteHTML(type, level) {
+  const def = BUILDING_TYPES[type];
+  if (!def) return '';
+  
+  const isMainBank = (type === "mtbank");
+  
+  return `
+    <div style="position:absolute;bottom:${isMainBank ? '28px' : '30px'};left:50%;transform:translateX(-50%);width:${isMainBank ? '60px' : '50px'};height:${isMainBank ? '60px' : '50px'};display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;filter:drop-shadow(0 6px 4px rgba(0,0,0,0.25));z-index:10;">
+      <img src="${SPRITE_PATH}${def.sprite}" alt="${def.name}" style="width:100%;height:100%;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div style="display:none;width:100%;height:100%;background:${def.bg};border-radius:12px;align-items:center;justify-content:center;font-size:28px;font-weight:bold;color:#333;">${def.icon}</div>
+    </div>
+  `;
+}
 
   function tileBg(r, c) {
     const isCenter = (r === 2 && c === 2);
@@ -2409,31 +2503,27 @@ function initCityGame() {
   var mtbankExpToNext = currentUser?.mtbankExpToNext || 100;
   var expPercent = (mtbankExp / mtbankExpToNext) * 100;
   
-  // Получаем количество зарядов (по умолчанию 6)
-  var charges = currentUser?.cityCharges !== undefined ? currentUser.cityCharges : 6;
-  var lastChargeDate = currentUser?.lastChargeDate || null;
-  
   panel.innerHTML = `
     <div class="game-container" style="position:relative; padding-bottom:80px; background:#ffffff !important;">
       
       <!-- Компактная верхняя панель с градиентом -->
       <div style="background:linear-gradient(145deg,#007bff 0%,#6a00b8 48%,#e10098 100%); padding:12px 16px; border-radius:0 0 20px 20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <h2 style="margin:0; font-size:1.1rem; font-weight:bold; color:white; text-shadow:0 2px 4px rgba(0,0,0,0.2);">🏙️ Город МТ</h2>
-          <div style="display:flex; align-items:center; gap:12px;">
-            <!-- Батарейка -->
-            <div class="battery-icon" id="battery-icon" style="display:flex; align-items:center; gap:4px;">
-              <div class="battery-container">
-                <div class="battery-body">
-                  <div class="battery-level" style="width:100%"></div>
-                </div>
-                <div class="battery-cap"></div>
-              </div>
-              <span class="battery-charges" id="battery-charges" style="font-size:10px; color:white; font-weight:bold;">${charges}/6</span>
-            </div>
-            <button id="game-help-btn" style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); border-radius:30px; padding:5px 12px; font-size:0.65rem; font-weight:500; color:white; cursor:pointer;">❓ Как играть?</button>
-          </div>
-        </div>
+  <h2 style="margin:0; font-size:1.1rem; font-weight:bold; color:white; text-shadow:0 2px 4px rgba(0,0,0,0.2);">Город МТ</h2>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <!-- 6 наклонных толстых делений -->
+    <div style="display:flex; gap:3px; align-items:center;">
+    <span style="font-size:1.2rem;">⚡</span>
+      <div style="width:20px; height:14px; background:white; transform:skewX(-15deg); border-radius:2px;"></div>
+      <div style="width:20px; height:14px; background:white; transform:skewX(-15deg); border-radius:2px;"></div>
+      <div style="width:20px; height:14px; background:white; transform:skewX(-15deg); border-radius:2px;"></div>
+      <div style="width:20px; height:14px; background:white; transform:skewX(-15deg); border-radius:2px;"></div>
+      <div style="width:20px; height:14px; background:white; transform:skewX(-15deg); border-radius:2px;"></div>
+      <div style="width:20px; height:14px; background:white; transform:skewX(-15deg); border-radius:2px;"></div>
+    </div>
+    <button id="game-help-btn" style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); border-radius:30px; padding:5px 12px; font-size:0.65rem; font-weight:500; color:white; cursor:pointer;"> Как играть?</button>
+  </div>
+</div>
         
         <div style="display:flex; gap:6px;">
           <div style="background:rgba(255,255,255,0.15); backdrop-filter:blur(10px); border-radius:12px; padding:8px 12px; flex:1;">
@@ -2500,6 +2590,11 @@ function initCityGame() {
   
   var gameData = loadGameBuildings();
   buildings = gameData.buildings;
+  // Синхронизируем уровень МТБанка из currentUser
+var currentUser = getCurrentUser();
+if (currentUser && buildings[12] && buildings[12].type === "mtbank") {
+  buildings[12].level = currentUser.mtbankLevel || 1;
+}
 
   normalizePendingIncomes();
   
@@ -2552,24 +2647,6 @@ function initCityGame() {
   updateMtbankUI();
   bindMtbankModalEvents();
 }
-
-// Функция обновления отображения батарейки
-/*function updateBatteryDisplay() {
-  var currentUser = getCurrentUser();
-  if (!currentUser) return;
-  
-  var charges = currentUser.cityCharges !== undefined ? currentUser.cityCharges : 6;
-  var batteryLevelDiv = document.querySelector('.battery-level');
-  var chargesSpan = document.getElementById('battery-charges');
-  
-  if (batteryLevelDiv) {
-    var percent = (charges / 6) * 100;
-    batteryLevelDiv.style.width = percent + '%';
-  }
-  if (chargesSpan) {
-    chargesSpan.textContent = charges + '/6';
-  }
-}*/
 
   // ========== ИНИЦИАЛИЗАЦИЯ ==========
 
