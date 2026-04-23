@@ -2651,7 +2651,13 @@
     if (buyVoucherBtn) {
       buyVoucherBtn.addEventListener("click", buyVoucher);
     }
-    
+    // Промокод
+var promoCheckBtn = document.getElementById("btn-check-promo");
+if (promoCheckBtn) {
+  promoCheckBtn.addEventListener("click", function() {
+    showGameToast("🔧 Ввод промокодов пока недоступен");
+  });
+}
     initTasksTabs();
     window.initCityGame = initCityGame;
     
